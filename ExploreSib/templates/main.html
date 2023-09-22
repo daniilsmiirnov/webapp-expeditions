@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% endblock title %}
+{% block header %}
+<main>
+   Освоение Сибири и Дальнего Востока.
+</main>
+{% endblock header %}
+
+{% block content %}
+<form action="" method="GET" >
+    <input name="text" type="text" value={{word}}>
+    <select name="field">
+        <option value="place">Место</option>
+        <option value="opener">Открыватель</option>
+        <option value="year">Год</option>
+    </select>
+    <button type="submit">Поиск</button>
+</form>
+<div class='container'>
+    {%  for n in data%}
+        <div class="card">
+            <a href="{{n.id}}">
+                <img src="{% static 'images/'|add:n.id|add:'.jpg' %}" style="width: 300px; height: 300px;">
+                <p>{{ n.place }}</p>
+                
+            </a>
+            {{n.region}}
+        </div>
+    {% endfor %}
+</div>
+{% endblock content %}

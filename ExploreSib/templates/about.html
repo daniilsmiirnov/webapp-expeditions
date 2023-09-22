@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+
+{% endblock title %}
+{% block header %}
+<div class='head-about'>
+    {{data.place}}
+</div>
+{% endblock header %}
+{% block content %}
+<div class='about'>
+    <img src="{% static 'images/'|add:data.id|add:'.jpg' %}" style="width: 40%; height: 40%; margin-left:20px">
+        <div class='info-about'>
+
+            <p>Регион: {{data.region}}</p>
+            <p> Открыватель: {{data.opener}}</p>
+            <p> Год открытия(основания): {{data.year}}</p>
+            <p> Экспедиция: {{data.expedition}}</p>
+        </div>
+</div>
+{% endblock content %}
