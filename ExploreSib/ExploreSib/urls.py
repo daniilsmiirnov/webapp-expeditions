@@ -21,7 +21,7 @@ from lab import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.filter,name=''),
+    path('', views.main),
     #re_path(r'^about', views.about),
     path('<int:id>/',views.about),
     #path('filter', views.filter),

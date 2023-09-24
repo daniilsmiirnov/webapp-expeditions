@@ -5,18 +5,17 @@
 {% endblock title %}
 {% block header %}
 <div class='head-about'>
-    {{data.place}}
+    {{data.Name_Obj}}
 </div>
 {% endblock header %}
 {% block content %}
 <div class='about'>
-    <img src="{% static 'images/'|add:data.id|add:'.jpg' %}" style="width: 40%; height: 40%; margin-left:20px">
+    <img src="{% static 'images/'|add:data.Image_Url|add:'.jpg' %}" style="width: 40%; height: 40%; margin-left:20px">
         <div class='info-about'>
 
-            <p>Регион: {{data.region}}</p>
-            <p> Открыватель: {{data.opener}}</p>
-            <p> Год открытия(основания): {{data.year}}</p>
-            <p> Экспедиция: {{data.expedition}}</p>
+            <p>Регион: {{data.Region}}</p>
+            <p> Открыватель: {{data.Opener}}</p>
+            <p> Год открытия(основания): {{data.Year}}</p>
         </div>
 </div>
 {% endblock content %}
