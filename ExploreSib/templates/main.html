@@ -11,7 +11,7 @@
 <form action="" method="GET" >
     <input name="text" type="text" value={{word}}>
     <button type="submit">Поиск</button>
-</form>
+</form >
 <div class='container'>
     {%  for n in data%}
         <div class="card">
@@ -20,6 +20,9 @@
                 <p>{{ n.Name_Obj }}</p>
             </a>
             {{n.Region}}
+            <form action="" method='GET' class = 'del'>
+            <button class= 'but' type='submit' name= 'delete' value = {{n.ID_Object}}>Удалить</button>
+            </form>
         </div>
     {% endfor %}
 </div>

@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import *
+import psycopg2
 
 '''
 data = [
@@ -46,14 +47,20 @@ def filter(request):
     return render(request, "main.html", {'data':new_data, 'word':text})
 '''
 def main(request):
-    data = City_Obj.objects.all()
-    print('data',data.query)
+   
+    data=City_Obj.objects.filter(Status='ope').values()
     text = request.GET.get('text')
-    print (text)
+    text = '' if text==None else text
+    print ('text:',text)
     if (text!=''):
-        data = City_Obj.objects.filter(Name_Obj=text)
+        data = City_Obj.objects.filter(Name_Obj=text) & City_Obj.objects.filter(Status='ope')
         return render(request, "main.html", {'data':data, 'word':text})
-    
+    dele_id = request.GET.get('delete')
+    print('dele_id:',dele_id)   
+    if (dele_id!=None):
+        change_status(dele_id)
+        data=City_Obj.objects.filter(Status='ope').values()
+        return render(request, "main.html", {'data':data})
         
     return render(request, "main.html", {'data':data})
 
@@ -61,3 +68,11 @@ def about(request,id):
     city = City_Obj.objects.get(ID_Object=id)
     print(city)
     return render(request, "about.html", {'data':city})
+
+def change_status(id):
+    conn = psycopg2.connect(dbname="expeditions", host="localhost", user="postgres", password="1233", port="5432")
+    cursor = conn.cursor()
+    cursor.execute('''UPDATE "lab_city_obj" set "Status"='del' where "ID_Object"=%s''',(id))
+    conn.commit()   # реальное выполнение команд sql1
+    cursor.close()
+    conn.close()
