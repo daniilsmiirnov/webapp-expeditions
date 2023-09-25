@@ -26,7 +26,8 @@ class Expeditions(models.Model):
     ]
     Status = models.CharField(max_length=2, choices=status, default='in', help_text='Status Expedition')
     Leader = models.CharField(max_length=100,help_text='Input name leader')
-    Moderator = models.ForeignKey(Users, on_delete=models.CASCADE)
+    Moderator = models.ForeignKey(Users,related_name='Moderator', on_delete=models.CASCADE,default=1)
+    ID_Creator = models.ForeignKey(Users,related_name='ID_Author', on_delete=models.CASCADE, default=1)
     Describe = models.CharField(max_length=400, null=True )
     def __str__(self):
         return self.Name_Exp
