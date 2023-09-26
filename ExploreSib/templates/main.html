@@ -20,7 +20,8 @@
                 <p>{{ n.Name_Obj }}</p>
             </a>
             {{n.Region}}
-            <form action="" method='GET' class = 'del'>
+            <form action="/delete" method="POST" class = 'del'>
+            {% csrf_token %}
             <button class= 'but' type='submit' name= 'delete' value = {{n.ID_Object}}>Удалить</button>
             </form>
         </div>

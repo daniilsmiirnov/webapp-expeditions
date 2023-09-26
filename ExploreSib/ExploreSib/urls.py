@@ -25,5 +25,6 @@ urlpatterns = [
     #re_path(r'^about', views.about),
     path('<int:id>/',views.about),
     #path('filter', views.filter),
+    path('delete', views.DeleteObject),
     
 ]   

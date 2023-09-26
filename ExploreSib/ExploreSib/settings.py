@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'ExploreSib.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'expeditions',
+        'NAME': 'exped',
         'USER': 'postgres',
         'PASSWORD': '1233',
         'HOST': 'localhost',

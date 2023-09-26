@@ -54,13 +54,13 @@ def main(request):
     if (text!=''):
         data = City_Obj.objects.filter(Name_Obj=text) & City_Obj.objects.filter(Status='ope')
         return render(request, "main.html", {'data':data, 'word':text})
-    dele_id = request.GET.get('delete')
+    '''dele_id = request.GET.get('delete')
     print('dele_id:',dele_id)   
     if (dele_id!=None):
         change_status(dele_id)
         data=City_Obj.objects.filter(Status='ope').values()
         return render(request, "main.html", {'data':data})
-        
+       ''' 
     return render(request, "main.html", {'data':data})
 
 def about(request,id):
@@ -68,6 +68,14 @@ def about(request,id):
     print(city)
     return render(request, "about.html", {'data':city})
 
+def DeleteObject(request):
+    if request.method == 'POST':
+        object_id = request.POST.get('delete')
+        print('id',object_id)
+        change_status(object_id)
+        data=City_Obj.objects.filter(Status='ope').values()
+        return render(request, "main.html", {'data':data})
+        
 def change_status(id):
     conn = psycopg2.connect(dbname="expeditions", host="localhost", user="postgres", password="1233", port="5432")
     cursor = conn.cursor()
