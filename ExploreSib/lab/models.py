@@ -1,5 +1,5 @@
 from django.db import models
-
+from viewflow.fields import CompositeKey
 # Create your models here.
 
 class Users(models.Model):
@@ -47,12 +47,18 @@ class City_Obj(models.Model):
     def __str__(self):
         return self.Name_Obj 
     
-    
-    
+    '''
 class ObjectExpedition(models.Model):
     ID = models.IntegerField(primary_key=True)
     ID_Obj = models.ForeignKey(City_Obj,on_delete=models.CASCADE)
     ID_Exp = models.ForeignKey(Expeditions ,on_delete=models.CASCADE)
     def __str__(self):
         return (self.ID_Obj.Name_Obj+" - "+self.ID_Exp.Name_Exp)
-    
+    '''
+class Obj_Exp(models.Model):
+    ID_OE = CompositeKey(columns=['ID_Exp', 'ID_Obj'])
+    ID_Exp = models.ForeignKey(Expeditions, on_delete=models.CASCADE, db_column='ID_Exp')
+    ID_Obj = models.ForeignKey(City_Obj, on_delete=models.CASCADE, db_column='ID_Obj')
+    Number = models.IntegerField(null=True, help_text='Порядковый номер')
+    def __str__(self):
+        return (self.ID_Obj.Name_Obj+" - "+self.ID_Exp.Name_Exp)
