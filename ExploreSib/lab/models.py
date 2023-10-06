@@ -62,4 +62,6 @@ class Obj_Exp(models.Model):
     Number = models.IntegerField(null=True, help_text='Порядковый номер')
     def __str__(self):
         return (self.ID_Obj.Name_Obj+" - "+self.ID_Exp.Name_Exp)
+    class Meta:
+        manage: False
     #
