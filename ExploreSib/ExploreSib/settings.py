@@ -118,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -130,7 +130,9 @@ USE_TZ = True
 
 #STATIC_URL = 'static/'
 #STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 STATIC_URL = '/static/'
+
 if DEBUG:
      STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static')
@@ -139,5 +141,21 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
+'''
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'bucket_name'     # Бакет должен уже быть создан
+AWS_ACCESS_KEY_ID = 'danial'
+AWS_SECRET_ACCESS_KEY = 'danial1233'
+AWS_S3_ENDPOINT_URL = 'http://127.0.0.1:9000'
+'''
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'static'    
+AWS_ACCESS_KEY_ID = 'kKnzUbAa0EbtUvV4Os0c'
+AWS_SECRET_ACCESS_KEY = 'a0610EIEjlqCeTmUvfQlLbREYWrxJmkzqAgS7Ys7'
+AWS_S3_ENDPOINT_URL = 'http://127.0.0.1:9000'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+

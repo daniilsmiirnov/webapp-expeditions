@@ -17,8 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from lab import views
+from rest_framework import routers
 
 
+router = routers.DefaultRouter()
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.main),
@@ -26,5 +28,8 @@ urlpatterns = [
     path('<int:id>/',views.about),
     #path('filter', views.filter),
     path('delete', views.DeleteObject),
+    
+    path(r'objs/', views.get_list, name='objs-list'),
+    
     
 ]   

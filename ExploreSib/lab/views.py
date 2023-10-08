@@ -1,7 +1,11 @@
 from django.shortcuts import render
 from .models import *
 import psycopg2
-
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from .serializers import *
+from rest_framework.decorators import api_view
 '''
 data = [
     {"id":'1',"place":"c. Карачино" ,"region":"Тюменская область","opener": "Ермак Тимофеевич", "year":1582, "expedition":"Первая русская экспедиция в Сибирь (1581-1585)"},
@@ -83,3 +87,14 @@ def change_status(id):
     conn.commit()   # реальное выполнение команд sql1
     cursor.close()
     conn.close()
+
+
+@api_view(['Get'])
+def get_list(request, format=None):
+    """
+    Возвращает список объектов
+    """
+    print('get')
+    objs = City_Obj.objects.all()
+    serializer = ObjSerializer(objs, many=True)
+    return Response(serializer.data)
