@@ -6,95 +6,378 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .serializers import *
 from rest_framework.decorators import api_view
-'''
-data = [
-    {"id":'1',"place":"c. Карачино" ,"region":"Тюменская область","opener": "Ермак Тимофеевич", "year":1582, "expedition":"Первая русская экспедиция в Сибирь (1581-1585)"},
-    {"id":'2',"place":"Кашлык" ,"region":"Тюменская область","opener": "Ермак Тимофеевич", "year":1582, "expedition":"Первая русская экспедиция в Сибирь (1581-1585)"},
-    {"id":'3',"place":"Назым" ,"region":"ХМАО","opener": "Ермак Тимофеевич", "year":1583, "expedition":"Первая русская экспедиция в Сибирь (1581-1585)"},
-    {"id":'4',"place":"Тюмень" ,"region":"Тюменская область","opener": "Василий Сюкин", "year":1586, "expedition":"Первая русская экспедиция в Сибирь"},
-    {"id":'5',"place":"Красноярск" ,"region":"Красноярский край","opener": "Андрей Дубенский", "year":1628, "expedition":"Освоение Сибири Казаками"},
-    {"id":'6',"place":"Тобольск" ,"region":"Тюменская область","opener": "Данила Чулков", "year":1587, "expedition":"Создание острогов воеводами по приказу Федора Ивановича"},
-    {"id":'7',"place":"мыс Дежнева" ,"region":"Чукотский АО","opener": "Семен Дежнев", "year":1648, "expedition":"Чукотская экспедиция"},
-    {"id":'8',"place":"о Диомида" ,"region":"Чукотский АО","opener": "Витус Беринг", "year":1728, "expedition":"Первая Камчатская экспедиция"}]
+import ast
+from django.http import HttpResponse
+from django.db.models.query import QuerySet
 
-def GetPlace(request):
-    
-    return render(request, "main.html", {'data':data})
- 
-def about(request, id):
-    city="Nothing, произошла ошибка"
-    test = City_Obj.objects.all()[0]
-    print(test)
-    for n in data:
-        if n['id']== str(id):
-            city = n
-    print("id",id,type(id))
-    print("place:",city)
-    return render(request, "about.html",{'data':city})
- 
-def filter(request):
-    new_data=[]
-    test = City_Obj.objects.all()
-    print(test)
-    text = request.GET.get('text')
-    field = request.GET.get('field')
-    print(text,field)
-    if (field):
-        for n in data:
-            if str(n[field])==text:
-                print('check,',n[field],text)
-                new_data.append(n)
-        
-    if new_data==[]:
-        new_data=data
-    return render(request, "main.html", {'data':new_data, 'word':text})
-'''
-def main(request):
-   
-    data=City_Obj.objects.filter(Status='ope').values()
-    text = request.GET.get('text')
-    text = '' if text==None else text
-    print ('text:',text)
-    if (text!=''):
-        data = City_Obj.objects.filter(Name_Obj=text) & City_Obj.objects.filter(Status='ope')
-        return render(request, "main.html", {'data':data, 'word':text})
-    '''dele_id = request.GET.get('delete')
-    print('dele_id:',dele_id)   
-    if (dele_id!=None):
-        change_status(dele_id)
-        data=City_Obj.objects.filter(Status='ope').values()
-        return render(request, "main.html", {'data':data})
-       ''' 
-    return render(request, "main.html", {'data':data})
-
-def about(request,id):
-    city = City_Obj.objects.get(ID_Object=id)
-    print(city)
-    return render(request, "about.html", {'data':city})
-
-def DeleteObject(request):
-    if request.method == 'POST':
-        object_id = request.POST.get('delete')
-        print('id',object_id)
-        change_status(object_id)
-        data=City_Obj.objects.filter(Status='ope').values()
-        return render(request, "main.html", {'data':data})
-        
-def change_status(id):
-    conn = psycopg2.connect(dbname="expeditions", host="localhost", user="postgres", password="1233", port="5432")
-    cursor = conn.cursor()
-    cursor.execute('''UPDATE "lab_city_obj" set "Status"='del' where "ID_Object"=%s''',(id))
-    conn.commit()   # реальное выполнение команд sql1
-    cursor.close()
-    conn.close()
 
 
 @api_view(['Get'])
-def get_list(request, format=None):
+def get_objects(request, format=None):
     """
     Возвращает список объектов
     """
-    print('get')
-    objs = City_Obj.objects.all()
-    serializer = ObjSerializer(objs, many=True)
+    Field1= request.GET.get('name')
+    Field2 = request.GET.get('year')
+    Field3 = request.GET.get('opener')
+    if  Field1 :
+        data = Object.objects.filter(Name_Obj=Field1) & Object.objects.filter(Status='ope')
+        serializer = ObjSerializer(data,many=True)
+        return Response(serializer.data)
+    if Field2 :
+        data = Object.objects.filter(Year=Field2) & Object.objects.filter(Status='ope')
+        serializer = ObjSerializer(data,many=True)
+        return Response(serializer.data)
+    if Field3:
+        data = Object.objects.filter(Opener=Field3) & Object.objects.filter(Status='ope')
+        serializer = ObjSerializer(data,many=True)
+        return Response(serializer.data)
+    else:
+        objs = Object.objects.all()
+        serializer = ObjSerializer(objs, many=True)
+        return Response(serializer.data)
+
+@api_view(['Get'])
+def get_object(request,id,format=None):
+    """
+    Возвращает объект
+    """
+    if request.method == 'GET':
+        if not Object.objects.filter(ID_Object=id).exists():
+            return Response(f"Объекта с таким id нет")
+        obj = get_object_or_404(Object, ID_Object=id)
+        #obj = City_Obj.objects.get(ID_Object=id)
+        print(obj)
+        serializer = ObjSerializer(obj)
     return Response(serializer.data)
+
+@api_view(['Get'])
+def filter_object(request,format=None):
+    """
+    фильтр объекта
+    """
+    Field1= request.GET.get('name')
+    Field2 = request.GET.get('year')
+    Field3 = request.GET.get('opener')
+    if  Field1 :
+        data = Object.objects.filter(Name_Obj=Field1) & Object.objects.filter(Status='ope')
+        serializer = ObjSerializer(data,many=True)
+        return Response(serializer.data)
+    if Field2 :
+        data = Object.objects.filter(Year=Field2) & Object.objects.filter(Status='ope')
+        serializer = ObjSerializer(data,many=True)
+        return Response(serializer.data)
+    if Field3:
+        data = Object.objects.filter(Opener=Field3) & Object.objects.filter(Status='ope')
+        serializer = ObjSerializer(data,many=True)
+        return Response(serializer.data)
+    else:
+        return Response('Фильтр неверный')
+    
+@api_view(['Post'])
+def create_object(request,format=None):
+    """
+    Добавляет объект
+    """
+    serializer = ObjSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['Put'])
+def put_object(request,id,format=None):
+    """
+    Обновляет объект
+    """
+    obj = get_object_or_404(Object, ID_Object=id)
+    #print('hi',obj)
+    serializer = ObjSerializer(obj,data=request.data)
+    print('se',serializer)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['Delete'])
+def del_object(request, id, format=None):    
+    """
+    Удаляет объект
+    """
+    obj = get_object_or_404(Object, ID_Object=id)
+    obj.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['Post'])
+def post_object(request, id, format=None):    
+    """
+    Добавляет объект в заявку 
+    """
+
+    if not Object.objects.filter(ID_Object=id).exists():
+            return Response(f"Объекта с таким id нет")
+    obj = Object.objects.get(ID_Object = id)
+    print('ob', obj)
+    exp = Expedition.objects.filter(Status='in').last()
+    print('exp',exp)
+    if exp is None:
+        exp = Expedition.objects.create()
+    print('exp',exp)
+    exp.Objects.add(obj)
+    exp.save()
+
+    serializer = ExpSerializer(exp)
+    
+    return Response(serializer.data)
+
+
+
+
+
+
+
+
+#########################################
+
+@api_view(['Get'])
+def get_exps(request, format=None):
+    """
+    Возвращает список экспедиций
+    """
+    Field1= request.GET.get('status')
+    Date1 = request.GET.get('date1')
+    Date2 = request.GET.get('date2')
+    if  Field1:
+        data = Expedition.objects.filter(Status=Field1)
+        serializer = ExpSerializer(data,many=True)
+        da= data
+        print(da.values())
+        return Response(serializer.data)
+    if Date2 and Date1:
+        date1 = datetime.strptime(Date1, "%Y-%m-%d %H:%M:%S")
+        date2 = datetime.strptime(Date2, "%Y-%m-%d %H:%M:%S")
+        objects = Expedition.objects.all()
+        set = Expedition.objects.none()
+        for obj in objects:
+                if (obj.DateEnd<date2 and obj.DateStart>date1):
+                    set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
+                    s=set
+                    print(s.values())
+        n=set
+        print('---------',n.values())
+        serializer = ExpSerializer(set, many=True)
+        return Response(serializer.data)
+    if Date2:
+        date2 = datetime.strptime(Date2, "%Y-%m-%d %H:%M:%S")
+        objects = Expedition.objects.all()
+        set = Expedition.objects.none()
+        for obj in objects:
+                if obj.DateEnd<date2:
+                    set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
+                    s=set
+                    print(s.values())
+        n=set
+        print('---------',n.values())
+        serializer = ExpSerializer(set, many=True)
+        return Response(serializer.data)
+    if Date1:
+        date1 = datetime.strptime(Date1, "%Y-%m-%d %H:%M:%S")
+        objects = Expedition.objects.all()
+        set = Expedition.objects.none()
+        for obj in objects:
+                if obj.DateStart>date1:
+                    set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
+                    s=set
+                    print(s.values())
+        n=set
+        print('---------',n.values())
+        serializer = ExpSerializer(set, many=True)
+        return Response(serializer.data)
+
+
+    objs = Expedition.objects.all()
+    print(objs)
+    serializer = ExpSerializer(objs, many=True)
+    return Response(serializer.data)
+
+@api_view(['Get'])
+def get_exp(request,id,format=None):
+    """
+    Возвращает экспедицию
+    """
+    if request.method == 'GET':
+        obj = get_object_or_404(Expedition, ID_Expedition=id)
+        #obj = City_Obj.objects.get(ID_Object=id)
+        print(obj)
+        serializer = ExpSerializer(obj)
+    return Response(serializer.data)
+
+@api_view(['Put'])
+def put_user(request,id,format=None):
+    ID_User=1
+    exp = Expedition.objects.get(ID_Expedition=id)
+    print (exp.ID_Creator.ID_User)
+    if exp.ID_Creator.ID_User!=ID_User:
+        return Response('У вас нет доступа к этой заявке')
+    status = request.data["Status"]
+    print (status)
+    if status in ["wo","de"]:
+        exp.Status=status
+        exp.save()
+        serializer = ExpSerializer(exp)
+        #if serializer.is_valid():
+         #   serializer.save()
+        return Response(serializer.data)
+    
+    else:
+        return Response("доступ запрещен!")
+    
+@api_view(['Put'])
+def put_mod(request,id,format=None):
+    exp = Expedition.objects.get(ID_Expedition=id)
+    status = request.data["Status"]
+    print (status)
+    if status in ["de","ca","en"]:
+        exp.Status=status
+        exp.save()
+        serializer = ExpSerializer(exp)
+       # if serializer.is_valid():
+        #    serializer.save()
+        return Response(serializer.data) 
+    else:
+        return Response("доступ запрещен!")
+@api_view(['Put'])
+def put_exp(request,id,format=None):
+    """
+    Обновляет экспедицию
+    """
+    obj = get_object_or_404(Expedition, ID_Expedition=id)
+    print('ob',obj)
+    serializer = ExpSerializer(obj,data=request.data)
+    print('se',serializer)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['Delete'])
+def del_exp1(request, id, format=None):    
+    """
+    Удаляет экспедицию
+    """
+    obj = get_object_or_404(Expedition, ID_Expedition=id)
+    print('ob',obj)
+    obj.delete() 
+
+    exp = Expedition.objects.all()
+    serializer = ExpSerializer(exp, many=True)
+    return Response(serializer.data)
+@api_view(['Delete'])
+def del_object_exp(request, id,id2, format=None):    
+    """
+    Удаляет объект из экспедиции
+    """
+    exp = Expedition.objects.get(ID_Expedition=id)
+    pro = Programm.objects.get(ID_Exp=id, ID_Obj=id2)
+    print('pro',pro)
+    pro.delete()
+    
+    print('exp')
+    #print(Object.objects.get(ID_Object=id2))
+    #exp.Objects.remove(Object.objects.get(ID_Object=id2))
+    
+    #exp.save()
+    
+    serializer = ExpSerializer(exp)
+    return Response(serializer.data)
+
+@api_view(['Delete'])
+def del_exp(request, id, format=None):    
+    """
+    Удаляет экспедицию
+    """
+    obj = get_object_or_404(Expedition, ID_Expedition=id)
+    print('ob', obj)
+    obj.Status = 'de'
+    print(obj.Status)
+    obj.save()
+
+    exp = Expedition.objects.all()
+    serializer = ExpSerializer(exp, many=True)
+    return Response(serializer.data)
+
+
+
+
+
+
+
+
+
+#####################################################
+
+@api_view(['Get'])
+def get_pros(request, format=None):
+ 
+    objs = Programm.objects.all()
+    
+    pr= objs
+    
+    print('ob',pr.values())
+    serializer = objSerializer(objs, many=True)
+    print(serializer)
+    return Response(serializer.data)
+
+@api_view(['Get'])
+def get_pro(request,id, format=None):
+ 
+    print('id',id[0],id[1])
+    obj = get_object_or_404(Programm, ID_Exp=id[0], ID_Obj=id[1])
+    pr= obj
+    
+    print('ob',pr)
+    serializer = objSerializer(obj)
+    print(serializer)
+    return Response(serializer.data)    
+
+
+@api_view(['Put'])
+def put_pro(request,id,format=None):
+    print('id',id[0],id[1])
+    
+    obj = get_object_or_404(Programm, ID_Exp=id[0], ID_Obj=id[1])
+    print('obj',obj)
+    #print(request.data)
+    serializer = objSerializer(obj,data=request.data)
+    print('se',serializer)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['Delete'])
+
+def del_pro(request, id, format=None):    
+    obj = get_object_or_404(Programm, ID_Exp=id[0], ID_Obj=id[1])
+    obj.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['Get'])
+def filter_exp(request,format=None):
+    """
+    фильтр объекта
+    """
+    Field1= request.GET.get('status')
+
+    if  Field1 :
+        data = Expedition.objects.filter(Status=Field1)
+        serializer = ExpSerializer(data,many=True)
+        da= data
+        print(da.values())
+        return Response(serializer.data)
+
+
+    else:
+        return Response('Фильтр неверный')
+
+
