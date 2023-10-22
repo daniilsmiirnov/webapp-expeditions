@@ -24,7 +24,7 @@ class Object(models.Model):
         ('ope','Действует'),
     ]
     Status = models.CharField(max_length=3, choices=status, default='ope', help_text='Status Obj')
-    Image_Url = models.CharField(max_length=100)
+    Image_Url = models.ImageField(upload_to='img/',blank=True, editable=True)
     def __str__(self):
         return self.Name_Obj     
 class Expedition(models.Model):
