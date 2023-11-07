@@ -10,7 +10,10 @@ import ast
 from django.http import HttpResponse
 from django.db.models.query import QuerySet
 
-
+def t(request):
+    data=Object.objects.filter(Status='ope').values()
+    print(data);
+    return render(request, "main.html", {'data':data})
 
 @api_view(['Get'])
 def get_objects(request, format=None):
@@ -34,7 +37,10 @@ def get_objects(request, format=None):
         return Response(serializer.data)
     else:
         objs = Object.objects.all()
+        o = objs;
+        print(o.values())
         serializer = ObjSerializer(objs, many=True)
+        print(serializer.data)
         return Response(serializer.data)
 
 @api_view(['Get'])
@@ -144,8 +150,8 @@ def get_exps(request, format=None):
     Возвращает список экспедиций
     """
     Field1= request.GET.get('status')
-    Date1 = request.GET.get('date1')
-    Date2 = request.GET.get('date2')
+    Date1 = request.GET.get('DateFormStart')
+    Date2 = request.GET.get('DateFormEnd')
     if  Field1:
         data = Expedition.objects.filter(Status=Field1)
         serializer = ExpSerializer(data,many=True)

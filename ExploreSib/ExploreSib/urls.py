@@ -24,7 +24,7 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    # path('', views.t),
     # API objects
     path(r'object/', views.get_objects), #список всех объектов +
     path(r'object/create/', views.create_object), # создание объекта +
@@ -48,7 +48,7 @@ urlpatterns = [
     #path(r'expedition/<int:id>/delete1/', views.del_exp1), # удаление экспедиции +
     # API Exp_Obj
     path(r'Programm/<str:id>/', views.get_pro) , #получение списка  м-м +
-    path(r'Programm/<str:id>/put/', views.put_pro), #обновление объекта +
+    # path(r'Programm/<str:id>/put/', views.put_pro), #обновление объекта +
     #path(r'Programm/', views.get_pros) , #получение списка  м-м +
     #path(r'Programm/<str:id>/delete/', views.del_pro), #удаление объекта +
     

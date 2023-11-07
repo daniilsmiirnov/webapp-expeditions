@@ -16,7 +16,7 @@
     {%  for n in data%}
         <div class="card">
             <a href="{{n.ID_Object}}">
-                <img src="{% static 'images/'|add:n.Image_Url|add:'.jpg' %}" style="width: 300px; height: 300px;">
+                <img src= {{n.Image_Url}} style="width: 300px; height: 300px;">
                 <p>{{ n.Name_Obj }}</p>
             </a>
             {{n.Region}}
