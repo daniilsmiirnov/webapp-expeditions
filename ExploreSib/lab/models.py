@@ -2,16 +2,24 @@ from django.db import models
 from viewflow.fields import CompositeKey
 from datetime import datetime
 from django.utils import timezone
+
+from django.contrib.auth.models import User
 # Create your models here.
 
+# class Users(models.Model):
+#     ID_User = models.IntegerField(primary_key=True)
+#     Is_Super = models.BooleanField(default=False)
+#     Username = models.CharField(max_length=50, help_text='Input username')
+#     Login = models.CharField(max_length=50, help_text='Input login')
+#     Password = models.CharField(max_length=50, help_text='Input password')
+#     def __str__(self):
+#         return self.Username
 class Users(models.Model):
-    ID_User = models.IntegerField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     Is_Super = models.BooleanField(default=False)
-    Username = models.CharField(max_length=50, help_text='Input username')
-    Login = models.CharField(max_length=50, help_text='Input login')
-    Password = models.CharField(max_length=50, help_text='Input password')
+
     def __str__(self):
-        return self.Username
+        return self.user.username
 class Object(models.Model):
     ID_Object = models.IntegerField(primary_key=True)
     Name_Obj = models.CharField(max_length=100,help_text='Input name obj')

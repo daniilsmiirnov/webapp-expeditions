@@ -20,6 +20,7 @@ def get_objects(request, format=None):
     """
     Возвращает список объектов
     """
+    # print('Done!!!!!')
     Field1= request.GET.get('name')
     Field2 = request.GET.get('year')
     Field3 = request.GET.get('opener')
