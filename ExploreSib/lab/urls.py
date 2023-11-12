@@ -1,8 +1,10 @@
 from django.urls import path 
-from . import views 
+from lab import views 
+from lab import views1
+from lab import auth
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
 
     # API objects
     path(r'object/', views.get_objects), #список всех объектов +
@@ -18,5 +20,10 @@ urlpatterns = [
 
     # API Exp_Obj
     path(r'Programm/<str:id>/', views.get_pro) , #получение списка  м-м +
+    
+    path(r'user/', views.us),
+    path(r'register/', auth.register),
+     
+    
 
 ] 

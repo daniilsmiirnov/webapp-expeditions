@@ -1,14 +1,12 @@
-from django.shortcuts import render
+
 from .models import *
-import psycopg2
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .serializers import *
 from rest_framework.decorators import api_view
-import ast
 from django.http import HttpResponse
-from django.db.models.query import QuerySet
+
 
 
 @api_view(['Get', 'Post', 'Delete','Put'])

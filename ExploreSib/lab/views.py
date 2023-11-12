@@ -1,20 +1,23 @@
 from django.shortcuts import render
 from .models import *
-import psycopg2
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .serializers import *
 from rest_framework.decorators import api_view
-import ast
-from django.http import HttpResponse
-from django.db.models.query import QuerySet
+
+
 
 def t(request):
     data=Object.objects.filter(Status='ope').values()
     print(data);
     return render(request, "main.html", {'data':data})
+@api_view(['Get'])
+def us(request, format=None):
 
+    users = Users.objects.all()
+    serializer = UsersSerializer(users, many=True)
+    return Response(serializer.data)   
 @api_view(['Get'])
 def get_objects(request, format=None):
     """

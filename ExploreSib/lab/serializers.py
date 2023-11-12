@@ -1,6 +1,11 @@
 from lab.models import *
 from rest_framework import serializers
 
+class UsersSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    class Meta:
+        model = Users
+        fields = '__all__'
 class ObjSerializer(serializers.ModelSerializer):
     class Meta:
         # Модель, которую мы сериализуем
@@ -25,4 +30,3 @@ class objSerializer(serializers.ModelSerializer):
         model = Programm
         fields =  ["ID_Obj",'ID_Exp', "Number"]
  
-

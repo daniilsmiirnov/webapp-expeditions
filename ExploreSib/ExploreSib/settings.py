@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     
     'lab'
 ]
+AUTH_USER_MODEL = 'lab.Users'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -99,7 +100,7 @@ CORS_ALLOW_METHODS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'exp',
+        'NAME': 'expe',
         'USER': 'postgres',
         'PASSWORD': '1233',
         'HOST': 'localhost',

@@ -2,24 +2,16 @@ from django.db import models
 from viewflow.fields import CompositeKey
 from datetime import datetime
 from django.utils import timezone
-
+from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import User
 # Create your models here.
 
-# class Users(models.Model):
-#     ID_User = models.IntegerField(primary_key=True)
-#     Is_Super = models.BooleanField(default=False)
-#     Username = models.CharField(max_length=50, help_text='Input username')
-#     Login = models.CharField(max_length=50, help_text='Input login')
-#     Password = models.CharField(max_length=50, help_text='Input password')
-#     def __str__(self):
-#         return self.Username
-class Users(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    Is_Super = models.BooleanField(default=False)
+class Users(AbstractUser):
 
+    Is_Super = models.BooleanField(default=False)
     def __str__(self):
-        return self.user.username
+        return self.username
+
 class Object(models.Model):
     ID_Object = models.IntegerField(primary_key=True)
     Name_Obj = models.CharField(max_length=100,help_text='Input name obj')
@@ -50,8 +42,8 @@ class Expedition(models.Model):
     ]
     Status = models.CharField(max_length=2, choices=status, default='in', help_text='Status Expedition')
     Leader = models.CharField(max_length=100,help_text='Input name leader',default='ФИО Лидера')
-    Moderator = models.ForeignKey(Users,related_name='Moderator', on_delete=models.CASCADE,default=1)
-    ID_Creator = models.ForeignKey(Users,related_name='ID_Author', on_delete=models.CASCADE, default=1)
+    Moderator = models.ForeignKey(Users,related_name='Moderator', on_delete=models.CASCADE, null=True)
+    ID_Creator = models.ForeignKey(Users,related_name='ID_Author', on_delete=models.CASCADE, null=True)
     Describe = models.CharField(max_length=400, null=True,default='...')
     Objects = models.ManyToManyField(Object,through='Programm')
     def __str__(self):
