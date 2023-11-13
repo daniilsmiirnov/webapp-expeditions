@@ -1,18 +1,22 @@
 from django.shortcuts import render
+from rest_framework.decorators import api_view, permission_classes
 from .models import *
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .serializers import *
 from rest_framework.decorators import api_view
-
-
+from .perm import IsAuthenticated, IsModerator
+from drf_yasg.utils import swagger_auto_schema
 
 def t(request):
     data=Object.objects.filter(Status='ope').values()
     print(data);
     return render(request, "main.html", {'data':data})
+
+
 @api_view(['Get'])
+@permission_classes([IsAuthenticated])
 def us(request, format=None):
 
     users = Users.objects.all()
@@ -83,7 +87,13 @@ def filter_object(request,format=None):
         return Response(serializer.data)
     else:
         return Response('Фильтр неверный')
-    
+
+@swagger_auto_schema(
+    method='post',  # Указываем, что это относится только к методу POST
+    request_body=ObjSerializer,
+    responses={201: 'Created', 400: 'Bad Request'},
+    operation_summary='Добавляет объект',
+)  
 @api_view(['Post'])
 def create_object(request,format=None):
     """

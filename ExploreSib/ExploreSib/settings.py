@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'lab'
 ]
 AUTH_USER_MODEL = 'lab.Users'
-
+CSRF_USE_SESSIONS = False
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -66,9 +66,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ],
 }
-# SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
-# SESSION_COOKIE_HTTPONLY = True
-# CSRF_COOKIE_SECURE = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

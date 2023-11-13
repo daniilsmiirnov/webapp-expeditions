@@ -13,6 +13,7 @@ def RRegister(request):
     serializer = UsersSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
+        # login(request,user)
         return JsonResponse({'message': 'User registered successfully'})
     return JsonResponse(serializer.errors, status=400)
 
