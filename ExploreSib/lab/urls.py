@@ -2,6 +2,7 @@ from django.urls import path
 from lab import views 
 from lab import views1
 from lab import auth
+from lab import auth_session
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -22,9 +23,9 @@ urlpatterns = [
     path(r'Programm/<str:id>/', views.get_pro) , #получение списка  м-м +
     
     path(r'user/', views.us),
-    path(r'register/', auth.RRegister, name='register'),
-    path('login/', auth.LLogin, name='login'),
-    path('logout/', auth.LLogout, name='logout'),
+    path(r'register/', auth_session.register, name='register'),
+    path(r'login/', auth.LLogin, name='login'),
+    path(r'logout/', auth.LLogout, name='logout'),
 
      
     
