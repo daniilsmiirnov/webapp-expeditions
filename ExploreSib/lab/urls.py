@@ -23,7 +23,9 @@ urlpatterns = [
     path(r'Programm/<str:id>/', views.get_pro) , #получение списка  м-м +
     
     path(r'user/', views.us),
-    path(r'register/', auth_session.register, name='register'),
+    path('register/', auth_session.RRegister, name='register'),
+    path('login/', auth_session.LLogin, name='login'),
+    path('logout/', auth_session.LLogout, name='logout'),
     # path(r'login/', auth.LLogin, name='login'),
     # path(r'logout/', auth.LLogout, name='logout'),
 

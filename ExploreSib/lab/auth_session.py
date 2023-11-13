@@ -1,35 +1,37 @@
-# auth/views.py
 
+
+from django.contrib.auth import authenticate, login, logout
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth import login
-from django.contrib.sessions.models import Session
-from django.contrib.sessions.backends.db import SessionStore
+
 from .serializers import UsersSerializer
-@api_view(['POST'])
-def register(request):
-    serializer = UsersSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        login(request, user)    
-        response = Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
-        response.set_cookie(key='user_id', value=user.id)  # Установка куки с user_id
-        return response
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
 @api_view(['POST'])
 def RRegister(request):
     serializer = UsersSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
+        return JsonResponse({'message': 'User registered successfully'})
+    return JsonResponse(serializer.errors, status=400)
 
-        # Вход в систему после успешной регистрации
-        # login(request, user)
+@csrf_exempt
+@api_view(['POST'])
+def LLogin(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
 
-        # Установка сессии в куки
-        request.session.save()
+    user = authenticate(request, username=username, password=password)
 
-        response = Response({'message': 'User registered and logged in successfully'}, status=status.HTTP_201_CREATED)
-        return response
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if user is not None:
+        login(request, user)
+        return JsonResponse({'message': 'Login successful'})
+    else:
+        return JsonResponse({'message': 'Invalid login credentials'}, status=401)
+
+@csrf_exempt
+@api_view(['POST'])
+def LLogout(request):
+    logout(request)
+    return JsonResponse({'message': 'Logout successful'})

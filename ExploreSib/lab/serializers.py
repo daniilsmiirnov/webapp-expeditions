@@ -1,11 +1,29 @@
 from lab.models import *
 from rest_framework import serializers
 
+# class UsersSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(write_only=True)
+#     class Meta:
+#         model = Users
+#         fields = '__all__'
+
+
+
 class UsersSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+
     class Meta:
         model = Users
-        fields = '__all__'
+        fields = ['id', 'username', 'email', 'password', 'Is_Super']
+
+    def create(self, validated_data):
+        user = Users.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            Is_Super=validated_data.get('Is_Super', False)
+        )
+        return user
       
 class ObjSerializer(serializers.ModelSerializer):
     class Meta:
