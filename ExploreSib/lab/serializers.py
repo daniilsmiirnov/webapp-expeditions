@@ -6,6 +6,7 @@ class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = '__all__'
+      
 class ObjSerializer(serializers.ModelSerializer):
     class Meta:
         # Модель, которую мы сериализуем
