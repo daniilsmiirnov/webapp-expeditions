@@ -22,7 +22,10 @@ urlpatterns = [
     path(r'Programm/<str:id>/', views.get_pro) , #получение списка  м-м +
     
     path(r'user/', views.us),
-    path(r'register/', auth.register),
+    path(r'register/', auth.RRegister, name='register'),
+    path('login/', auth.LLogin, name='login'),
+    path('logout/', auth.LLogout, name='logout'),
+
      
     
 
