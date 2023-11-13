@@ -24,8 +24,8 @@ urlpatterns = [
     
     path(r'user/', views.us),
     path(r'register/', auth_session.register, name='register'),
-    path(r'login/', auth.LLogin, name='login'),
-    path(r'logout/', auth.LLogout, name='logout'),
+    # path(r'login/', auth.LLogin, name='login'),
+    # path(r'logout/', auth.LLogout, name='logout'),
 
      
     
