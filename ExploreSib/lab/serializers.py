@@ -7,7 +7,21 @@ from rest_framework import serializers
 #         model = Users
 #         fields = '__all__'
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['id', 'username', 'email', 'password', 'Is_Super']
+        # extra_kwargs = {
+        #     'password': {'write_only': True}
+        # }
 
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        instance = self.Meta.model(**validated_data)
+        if password is not None:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 class UsersSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
