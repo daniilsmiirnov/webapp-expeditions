@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .serializers import *
 from rest_framework.decorators import api_view
-from .perm import IsAuthenticated, IsModerator
+from .perm import *
 from drf_yasg.utils import swagger_auto_schema
 
 def t(request):
@@ -16,6 +16,7 @@ def t(request):
 
 
 @api_view(['Get'])
+@isModerator
 # @permission_classes([IsAuthenticated])
 def us(request, format=None):
 

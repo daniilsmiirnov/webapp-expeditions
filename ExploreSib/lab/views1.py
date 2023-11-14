@@ -6,11 +6,11 @@ from rest_framework import status
 from .serializers import *
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+
 
 
 @api_view(['Get', 'Post', 'Delete','Put'])
-@csrf_exempt
+
 def object(request,id,format=None):
     """
     Возвращает объект
