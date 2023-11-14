@@ -17,9 +17,13 @@ import jwt, datetime
 def register(request):
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)    
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse({
+                'message': 'User registered successfully',
+                'data': serializer.data
+                                 })
+        return JsonResponse(serializer.errors, status=400)
 
 
 @api_view(['POST'])
@@ -27,14 +31,14 @@ def login(request):
     if request.method == 'POST':
         username = request.data.get('username')
         password = request.data.get('password')
-
+        # user = authenticate(request,username=username, password=password)
         user = Users.objects.filter(username=username).first()
 
         if user is None:
-            raise AuthenticationFailed('User not found!')
+            return JsonResponse({'message': 'Пользователя не существует!'})
 
         if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect password!')
+            return JsonResponse({'message': 'Пароль неверный!'})
 
         payload = {
             'id': user.id,
@@ -43,11 +47,10 @@ def login(request):
         }
 
         token = jwt.encode(payload, 'secret', algorithm='HS256')
-
         response = Response()
-
         response.set_cookie(key='jwt', value=token, httponly=True)
         response.data = {
+            'message': 'Login successfull',
             'jwt': token
         }
         return response
@@ -59,16 +62,17 @@ def user(request):
         token = request.COOKIES.get('jwt')
 
         if not token:
-            raise AuthenticationFailed('Unauthenticated!')
-
+            raise AuthenticationFailed('Аутентификация не пройдена!')
         try:
             payload = jwt.decode(token, 'secret', algorithms='HS256')
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
+            raise AuthenticationFailed('Аутентификация не пройдена!')
 
         user = Users.objects.filter(id=payload['id']).first()
         serializer = UserSerializer(user)
-        return Response(serializer.data)
+        return JsonResponse({'message': 'Аутентификация успешна',
+                             'user':serializer.data
+                             })
 
 
 @api_view(['POST'])
@@ -77,35 +81,8 @@ def logout(request):
         response = Response()
         response.delete_cookie('jwt')
         response.data = {
-            'message': 'success'
+            'message': 'Вы вышли из системы!'
         }
         return response
-
-@api_view(['POST'])
-def RRegister(request):
-    serializer = UsersSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        # login(request,user)
-        return JsonResponse({'message': 'User registered successfully'})
-    return JsonResponse(serializer.errors, status=400)
-
-@api_view(['POST'])
-def LLogin(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-
-    user = authenticate(request, username=username, password=password)
-
-    if user is not None:
-        login(request, user)
-        return JsonResponse({'message': 'Login successful'})
-    else:
-        return JsonResponse({'message': 'Invalid login credentials'}, status=401)
-
-@api_view(['POST'])
-def LLogout(request):
-    logout(request)
-    return JsonResponse({'message': 'Logout successful'})
 
 

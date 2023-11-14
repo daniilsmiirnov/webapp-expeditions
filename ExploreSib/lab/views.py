@@ -16,7 +16,7 @@ def t(request):
 
 
 @api_view(['Get'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def us(request, format=None):
 
     users = Users.objects.all()
