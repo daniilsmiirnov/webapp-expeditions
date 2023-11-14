@@ -6,9 +6,41 @@ from rest_framework import status
 from .serializers import *
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
-
-
-
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from .perm import *
+@swagger_auto_schema(
+    methods=['GET'],
+    operation_summary='Возвращает объект',
+    responses={
+        200: ObjSerializer,
+        404: 'Объекта с таким id нет'
+    }
+)
+@swagger_auto_schema(
+    methods=['PUT'],
+    operation_summary='Обновляет объект',
+    request_body=ObjSerializer,
+    responses={
+        200: ObjSerializer,
+        400: 'Ошибка при обновлении объекта'
+    }
+)
+@swagger_auto_schema(
+    methods=['POST'],
+    operation_summary='Добавляет объект в заявку',
+    responses={
+        200: ExpSerializer,  # Или ваш сериализатор Expedition, если это он
+        404: 'Объекта с таким id нет'
+    }
+)
+@swagger_auto_schema(
+    methods=['DELETE'],
+    operation_summary='Удаляет объект',
+    responses={
+        204: 'Объект успешно удален'
+    }
+)
 @api_view(['Get', 'Post', 'Delete','Put'])
 
 def object(request,id,format=None):
@@ -24,6 +56,7 @@ def object(request,id,format=None):
         serializer = ObjSerializer(obj)
         return Response(serializer.data)
     elif request.method == 'PUT':
+        
         """
         Обновляет объект
         """

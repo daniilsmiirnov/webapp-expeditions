@@ -4,14 +4,41 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 
 from rest_framework.decorators import api_view
-
+from .perm import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from .serializers import UserSerializer
 from .models import Users
 import jwt, datetime
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['username', 'password'],
+        properties={
+            'username': openapi.Schema(type=openapi.TYPE_STRING),
+            'password': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_PASSWORD),
+            # Добавьте другие поля, если необходимо
+        },
+    ),
+    responses={
+        200: openapi.Response(
+            description='User registered successfully',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    'data': openapi.Schema(type=openapi.TYPE_OBJECT),  # Замените на реальные поля пользователя
+                },
+            ),
+        ),
+        400: 'Invalid input',  # Пример для ошибочного запроса
+    },
+)
 @api_view(['POST'])
 def register(request):
     if request.method == 'POST':
@@ -25,6 +52,29 @@ def register(request):
         return JsonResponse(serializer.errors, status=400)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'username': openapi.Schema(type=openapi.TYPE_STRING),
+            'password': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['username', 'password']
+    ),
+    responses={
+        200: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'jwt': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        ),
+        400: "Bad Request: Invalid input data",
+        401: "Unauthorized: Invalid username or password",
+        # Define other possible response codes and schemas here
+    }
+)
 @api_view(['POST'])
 def login(request):
     if request.method == 'POST':
@@ -41,7 +91,7 @@ def login(request):
 
         payload = {
             'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=3),
             'iat': datetime.datetime.utcnow()
         }
 
@@ -53,7 +103,6 @@ def login(request):
             'jwt': token
         }
         return response
-
 
 @api_view(['GET'])
 def user(request):
@@ -75,6 +124,7 @@ def user(request):
 
 
 @api_view(['POST'])
+@isAuth
 def logout(request):
     if request.method == 'POST':
         response = Response()

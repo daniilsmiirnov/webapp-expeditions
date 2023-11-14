@@ -8,21 +8,34 @@ from .serializers import *
 from rest_framework.decorators import api_view
 from .perm import *
 from drf_yasg.utils import swagger_auto_schema
-
-def t(request):
-    data=Object.objects.filter(Status='ope').values()
-    print(data);
-    return render(request, "main.html", {'data':data})
+from drf_yasg import openapi
 
 
 @api_view(['Get'])
-@isModerator
+@isAuth
 # @permission_classes([IsAuthenticated])
 def us(request, format=None):
 
     users = Users.objects.all()
     serializer = UsersSerializer(users, many=True)
     return Response(serializer.data)   
+
+
+
+
+
+
+
+@swagger_auto_schema(
+    method='GET',
+    operation_summary='Возвращает список объектов',
+    manual_parameters=[
+        openapi.Parameter('name', openapi.IN_QUERY, description='Поле Имя географического объекта для фильтрации', type=openapi.TYPE_STRING),
+        openapi.Parameter('year', openapi.IN_QUERY, description='Поле Год создания для фильтрации', type=openapi.TYPE_INTEGER),
+        openapi.Parameter('opener', openapi.IN_QUERY, description='Поле Открыватель для фильтрации', type=openapi.TYPE_STRING),
+    ],
+    responses={200: ObjSerializer(many=True)}
+)
 @api_view(['Get'])
 def get_objects(request, format=None):
     """
@@ -52,50 +65,23 @@ def get_objects(request, format=None):
         print(serializer.data)
         return Response(serializer.data)
 
-@api_view(['Get'])
-def get_object(request,id,format=None):
-    """
-    Возвращает объект
-    """
-    if request.method == 'GET':
-        if not Object.objects.filter(ID_Object=id).exists():
-            return Response(f"Объекта с таким id нет")
-        obj = get_object_or_404(Object, ID_Object=id)
-        #obj = City_Obj.objects.get(ID_Object=id)
-        print(obj)
-        serializer = ObjSerializer(obj)
-    return Response(serializer.data)
 
-@api_view(['Get'])
-def filter_object(request,format=None):
-    """
-    фильтр объекта
-    """
-    Field1= request.GET.get('name')
-    Field2 = request.GET.get('year')
-    Field3 = request.GET.get('opener')
-    if  Field1 :
-        data = Object.objects.filter(Name_Obj=Field1) & Object.objects.filter(Status='ope')
-        serializer = ObjSerializer(data,many=True)
-        return Response(serializer.data)
-    if Field2 :
-        data = Object.objects.filter(Year=Field2) & Object.objects.filter(Status='ope')
-        serializer = ObjSerializer(data,many=True)
-        return Response(serializer.data)
-    if Field3:
-        data = Object.objects.filter(Opener=Field3) & Object.objects.filter(Status='ope')
-        serializer = ObjSerializer(data,many=True)
-        return Response(serializer.data)
-    else:
-        return Response('Фильтр неверный')
+
 
 @swagger_auto_schema(
-    method='post',  # Указываем, что это относится только к методу POST
-    request_body=ObjSerializer,
-    responses={201: 'Created', 400: 'Bad Request'},
+    method='POST',
     operation_summary='Добавляет объект',
-)  
+    request_body=ObjSerializer,
+    responses={
+        status.HTTP_201_CREATED: openapi.Response(
+            description='Объект успешно добавлен',
+            schema=ObjSerializer
+        ),
+        status.HTTP_400_BAD_REQUEST: 'Ошибка при добавлении объекта'
+    }
+)
 @api_view(['Post'])
+@isModerator
 def create_object(request,format=None):
     """
     Добавляет объект
