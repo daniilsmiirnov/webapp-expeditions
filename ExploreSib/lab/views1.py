@@ -9,6 +9,135 @@ from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .perm import *
+
+from rest_framework.views import APIView
+
+class ObjectView(APIView):
+    def get(self, request, id, format=None):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = payload.get('id')
+        if not user_id:
+            return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+        user = Users.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+        """
+        Возвращает объект
+        """
+        if not Object.objects.filter(ID_Object=id).exists():
+            return Response(f"Объекта с таким id нет")
+        obj = get_object_or_404(Object, ID_Object=id)
+        #obj = City_Obj.objects.get(ID_Object=id)
+        print(obj)
+        serializer = ObjSerializer(obj)
+        return Response(serializer.data)
+
+
+    def post(self, request, id, format=None):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = payload.get('id')
+        if not user_id:
+            return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+        user = Users.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+        """
+        Добавляет объект в заявку 
+        """
+
+        if not Object.objects.filter(ID_Object=id).exists():
+            return Response(f"Объекта с таким id нет")
+        obj = Object.objects.get(ID_Object = id)
+        print('ob', obj)
+        exp = Expedition.objects.filter(Status='in').last()
+        print('exp',exp)
+        if exp is None:
+            exp = Expedition.objects.create()
+        print('exp',exp)
+        exp.Objects.add(obj)
+        exp.save()
+
+        serializer = ExpSerializer(exp)
+        return Response(serializer.data)
+    def put(self, request, id, format=None):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = payload.get('id')
+        if not user_id:
+            return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+        user = Users.objects.filter(id=user_id, Is_Super=True).first()
+        if not user:
+            return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+        """
+        Обновляет объект
+        """
+        obj = get_object_or_404(Object, ID_Object=id)
+        #print('hi',obj)
+        serializer = ObjSerializer(obj,data=request.data)
+        print('se',serializer)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = payload.get('id')
+        if not user_id:
+            return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+        user = Users.objects.filter(id=user_id, Is_Super=True).first()
+        if not user:
+            return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+        """
+        Удаляет объект
+        """
+        obj = get_object_or_404(Object, ID_Object=id)
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+ 
+        
 @swagger_auto_schema(
     methods=['GET'],
     operation_summary='Возвращает объект',
@@ -129,12 +258,24 @@ def exp(request,id,format=None):
         """
         Удаляет экспедицию
         """
-        obj = get_object_or_404(Expedition, ID_Expedition=id)
-        print('ob',obj)
-        obj.delete() 
+    obj = get_object_or_404(Expedition, ID_Expedition=id)
+    print('ob', obj)
+    obj.Status = 'de'
+    print(obj.Status)
+    obj.save()
 
-        exp = Expedition.objects.all()
-        serializer = ExpSerializer(exp, many=True)
-        return Response(serializer.data)
-    else:
-        return HttpResponse('error')    
+    exp = Expedition.objects.all()
+    serializer = ExpSerializer(exp, many=True)
+    return Response(serializer.data)
+    #     """
+    #     Удаляет экспедицию
+    #     """
+    #     obj = get_object_or_404(Expedition, ID_Expedition=id)
+    #     print('ob',obj)
+    #     obj.delete() 
+
+    #     exp = Expedition.objects.all()
+    #     serializer = ExpSerializer(exp, many=True)
+    #     return Response(serializer.data)
+    # else:
+    #     return HttpResponse('error')    

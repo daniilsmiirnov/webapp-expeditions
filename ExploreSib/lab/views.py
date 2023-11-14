@@ -10,9 +10,11 @@ from .perm import *
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from django.conf import settings
+from django.core.cache import cache
 
 @api_view(['Get'])
-@isAuth
+@isModerator
 # @permission_classes([IsAuthenticated])
 def us(request, format=None):
 
@@ -41,6 +43,9 @@ def get_objects(request, format=None):
     """
     Возвращает список объектов
     """
+    cache.set('mykey', '123143242', timeout=None)
+    value = cache.get('mykey')
+    print(value)
     # print('Done!!!!!')
     Field1= request.GET.get('name')
     Field2 = request.GET.get('year')
@@ -274,9 +279,9 @@ def del_exp1(request, id, format=None):
     print('ob',obj)
     obj.delete() 
 
-    exp = Expedition.objects.all()
-    serializer = ExpSerializer(exp, many=True)
-    return Response(serializer.data)
+    # exp = Expedition.objects.all()
+    # serializer = ExpSerializer(exp, many=True)
+    return Response()
 @api_view(['Delete'])
 def del_object_exp(request, id,id2, format=None):    
     """
