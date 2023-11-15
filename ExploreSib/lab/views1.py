@@ -13,6 +13,13 @@ from .perm import *
 from rest_framework.views import APIView
 
 class ObjectView(APIView):
+    @swagger_auto_schema(
+        responses={200: 'Successful response', 403: 'Доступ запрещен: Токен отсутствует'},
+        operation_summary="Получение объекта по ID",
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID"),
+        ],
+    )
     def get(self, request, id, format=None):
         token = request.COOKIES.get('jwt')
         if not token:
@@ -43,7 +50,19 @@ class ObjectView(APIView):
         serializer = ObjSerializer(obj)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        responses={200: 'Successful response', 403: 'Доступ запрещен: Токен отсутствует'},
+        operation_summary="Добавить объект в экспедицию",
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID of the object"),
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
 
+            },
+        ),
+    )
     def post(self, request, id, format=None):
         token = request.COOKIES.get('jwt')
         if not token:
@@ -81,6 +100,19 @@ class ObjectView(APIView):
 
         serializer = ExpSerializer(exp)
         return Response(serializer.data)
+    @swagger_auto_schema(
+        responses={200: 'Successful response', 400: 'Bad request'},
+        operation_summary="Update object",
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID of the object"),
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+
+            },
+        ),
+    )
     def put(self, request, id, format=None):
         token = request.COOKIES.get('jwt')
         if not token:
@@ -111,6 +143,13 @@ class ObjectView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @swagger_auto_schema(
+        responses={204: 'Object deleted successfully', 403: 'Доступ запрещен: Токен отсутствует'},
+        operation_summary="Delete object",
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID of the object"),
+        ],
+    )
     def delete(self, request, id, format=None):
         token = request.COOKIES.get('jwt')
         if not token:
@@ -226,6 +265,118 @@ def object(request,id,format=None):
     else:
         return HttpResponse('error')    
     
+class ExpView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID of the expedition"),
+        ],
+        operation_summary="Get expedition",
+        responses={200: 'Successful response', 404: 'Expedition not found'}
+    )
+    def get(self, request, id, format=None):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = payload.get('id')
+        if not user_id:
+            return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+        user = Users.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+        """
+        Возвращает экспедицию
+        """
+        obj = get_object_or_404(Expedition, ID_Expedition=id)
+        serializer = ExpSerializer(obj)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID of the expedition"),
+        ],
+        operation_summary="Update expedition",
+         request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+
+            },),
+        responses={200: 'Successful response', 400: 'Bad request'}
+    )
+    def put(self, request, id, format=None):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = payload.get('id')
+        if not user_id:
+            return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+        user = Users.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+        """
+        Обновляет экспедицию
+        """
+        obj = get_object_or_404(Expedition, ID_Expedition=id)
+        serializer = ExpSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID of the expedition"),
+        ],
+        operation_summary="Delete expedition",
+        responses={200: 'Successful response', 404: 'Expedition not found'}
+    )
+    def delete(self, request, id, format=None):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = payload.get('id')
+        if not user_id:
+            return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+        user = Users.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+        """
+        Удаляет экспедицию
+        """
+        obj = get_object_or_404(Expedition, ID_Expedition=id)
+        obj.Status = 'de'
+        obj.save()
+
+        # exp = Expedition.objects.all()
+        serializer = ExpSerializer(exp, many=True)
+        return Response(serializer.data)    
     
 @api_view(['Get', 'Post', 'Delete','Put'])
 def exp(request,id,format=None):

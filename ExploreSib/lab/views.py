@@ -97,60 +97,12 @@ def create_object(request,format=None):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['Put'])
-def put_object(request,id,format=None):
-    """
-    Обновляет объект
-    """
-    obj = get_object_or_404(Object, ID_Object=id)
-    #print('hi',obj)
-    serializer = ObjSerializer(obj,data=request.data)
-    print('se',serializer)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-@api_view(['Delete'])
-def del_object(request, id, format=None):    
-    """
-    Удаляет объект
-    """
-    obj = get_object_or_404(Object, ID_Object=id)
-    obj.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-@api_view(['Post'])
-def post_object(request, id, format=None):    
-    """
-    Добавляет объект в заявку 
-    """
-
-    if not Object.objects.filter(ID_Object=id).exists():
-            return Response(f"Объекта с таким id нет")
-    obj = Object.objects.get(ID_Object = id)
-    print('ob', obj)
-    exp = Expedition.objects.filter(Status='in').last()
-    print('exp',exp)
-    if exp is None:
-        exp = Expedition.objects.create()
-    print('exp',exp)
-    exp.Objects.add(obj)
-    exp.save()
-
-    serializer = ExpSerializer(exp)
-    
-    return Response(serializer.data)
-
-
-
-
-
-
 
 
 #########################################
 
 @api_view(['Get'])
+@isModerator
 def get_exps(request, format=None):
     """
     Возвращает список экспедиций
@@ -224,6 +176,7 @@ def get_exp(request,id,format=None):
     return Response(serializer.data)
 
 @api_view(['Put'])
+@isAuth
 def put_user(request,id,format=None):
     ID_User=1
     exp = Expedition.objects.get(ID_Expedition=id)
@@ -244,6 +197,7 @@ def put_user(request,id,format=None):
         return Response("доступ запрещен!")
     
 @api_view(['Put'])
+@isModerator
 def put_mod(request,id,format=None):
     exp = Expedition.objects.get(ID_Expedition=id)
     status = request.data["Status"]
