@@ -202,7 +202,7 @@ def put_mod(request,id,format=None):
     exp = Expedition.objects.get(ID_Expedition=id)
     status = request.data["Status"]
     print (status)
-    if status in ["de","ca","en"]:
+    if status in ["ca","en"]:
         exp.Status=status
         exp.save()
         serializer = ExpSerializer(exp)
