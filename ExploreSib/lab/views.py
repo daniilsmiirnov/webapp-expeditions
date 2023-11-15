@@ -237,6 +237,7 @@ def del_exp1(request, id, format=None):
     # serializer = ExpSerializer(exp, many=True)
     return Response()
 @api_view(['Delete'])
+@isAuth
 def del_object_exp(request, id,id2, format=None):    
     """
     Удаляет объект из экспедиции
