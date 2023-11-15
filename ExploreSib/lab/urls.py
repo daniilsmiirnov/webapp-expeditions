@@ -14,7 +14,7 @@ urlpatterns = [
 
     # API Exp
     path(r'expedition/', views.get_exps), #список всех экспедиций +
-    # path(r'expedition/<int:id>/update_user/', views.put_user), # изменение статуса юзером +
+    path(r'expedition/update_user/', views.put_user), # изменение статуса юзером +
     path(r'expedition/<int:id>/update_mod/', views.put_mod), # изменение статуса модератором +
     # path(r'expedition/<int:id>/', views1.exp), # одна экспедиция +    
     path(r'expedition/<int:id>/', ExpView.as_view()), 

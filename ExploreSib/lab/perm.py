@@ -44,7 +44,6 @@ def isModerator(view_func):
         if not user_id:
             raise PermissionDenied('Доступ запрещен: Неверные данные в токене.')
 
-        # Проверка, является ли пользователь модератором
         user = Users.objects.filter(id=user_id, Is_Super=True).first()
         if not user:
             raise PermissionDenied('Доступ запрещен: Недостаточно прав для выполнения операции.')

@@ -9,7 +9,6 @@ from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .perm import *
-
 from rest_framework.views import APIView
 
 class ObjectView(APIView):
@@ -344,6 +343,7 @@ class ExpView(APIView):
         except Expedition.DoesNotExist:
             return Response({'message': 'Доступ запрещен: Нет доступа к этой заявке'}, status=status.HTTP_403_FORBIDDEN)
         serializer = ExpSerializer(obj, data=request.data)
+        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

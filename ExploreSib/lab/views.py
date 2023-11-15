@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 from .perm import *
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
+import jwt, datetime
 from django.conf import settings
 from django.core.cache import cache
 
@@ -102,7 +102,7 @@ def create_object(request,format=None):
 #########################################
 
 @api_view(['Get'])
-@isModerator
+
 def get_exps(request, format=None):
     """
     Возвращает список экспедиций
@@ -156,13 +156,33 @@ def get_exps(request, format=None):
         print('---------',n.values())
         serializer = ExpSerializer(set, many=True)
         return Response(serializer.data)
+    token = request.COOKIES.get('jwt')
+    if not token:
+        return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+    except jwt.InvalidTokenError:
+        return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
 
+    user_id = payload.get('id')
+    if not user_id:
+        return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
 
-    objs = Expedition.objects.all()
-    print(objs)
-    serializer = ExpSerializer(objs, many=True)
-    return Response(serializer.data)
-
+    user = Users.objects.filter(id=user_id).first()
+    if not user:
+        return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
+    if user.Is_Super:
+        objs = Expedition.objects.all()
+        serializer = ExpSerializer(objs, many=True)
+        return Response(serializer.data)
+    if not user.Is_Super:
+        objs = Expedition.objects.filter(ID_Creator=user)
+        serializer = ExpSerializer(objs, many=True)
+        return Response(serializer.data)
+    return Response({'message': 'Экспедиций нет'})
 @api_view(['Get'])
 def get_exp(request,id,format=None):
     """
@@ -175,26 +195,40 @@ def get_exp(request,id,format=None):
         serializer = ExpSerializer(obj)
     return Response(serializer.data)
 
-@api_view(['Put'])
-@isAuth
-def put_user(request,id,format=None):
-    ID_User=1
-    exp = Expedition.objects.get(ID_Expedition=id)
-    print (exp.ID_Creator.ID_User)
-    if exp.ID_Creator.ID_User!=ID_User:
-        return Response('У вас нет доступа к этой заявке')
-    status = request.data["Status"]
-    print (status)
-    if status in ["wo","de"]:
-        exp.Status=status
-        exp.save()
-        serializer = ExpSerializer(exp)
+@api_view(['Get'])
+# @isAuth
+def put_user(request,format=None):
+    token = request.COOKIES.get('jwt')
+    if not token:
+        return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
+        
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        return Response({'message': 'Доступ запрещен: Истек срок действия токена'}, status=status.HTTP_403_FORBIDDEN)
+    except jwt.InvalidTokenError:
+        return Response({'message': 'Доступ запрещен: Недействительный токен'}, status=status.HTTP_403_FORBIDDEN)
+
+    user_id = payload.get('id')
+    if not user_id:
+        return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
+
+    user = Users.objects.filter(id=user_id).first()
+    if not user:
+        return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)   
+
+    try:
+        exp = Expedition.objects.get(ID_Creator=user, Status='in')
+    except Expedition.DoesNotExist:
+        return Response({'message': 'У вас нет экспедиции.'})
+
+    exp.Status='wo'
+    exp.save()
+    serializer = ExpSerializer(exp)
         #if serializer.is_valid():
          #   serializer.save()
-        return Response(serializer.data)
-    
-    else:
-        return Response("доступ запрещен!")
+    return Response(serializer.data)
+
 @swagger_auto_schema(
     method='put',
     manual_parameters=[
@@ -217,18 +251,22 @@ def put_user(request,id,format=None):
 @api_view(['Put'])
 @isModerator
 def put_mod(request,id,format=None):
+    
     exp = Expedition.objects.get(ID_Expedition=id)
     status = request.data["Status"]
-    print (status)
-    if status in ["ca","en"]:
-        exp.Status=status
-        exp.save()
-        serializer = ExpSerializer(exp)
-       # if serializer.is_valid():
-        #    serializer.save()
-        return Response(serializer.data) 
+    print(status)
+    if exp.Status in ["ca","en","in"]:
+        if status in ["ca","en"]:
+            exp.Status=status
+            
+            exp.save()
+            serializer = ExpSerializer(exp)
+        # if serializer.is_valid():
+            #    serializer.save()
+            return Response(serializer.data) 
     else:
-        return Response("доступ запрещен!")
+        return Response("Заявка недоступна для изменения статуса!")
+
 @api_view(['Put'])
 def put_exp(request,id,format=None):
     """
