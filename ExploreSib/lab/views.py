@@ -195,7 +195,25 @@ def put_user(request,id,format=None):
     
     else:
         return Response("доступ запрещен!")
-    
+@swagger_auto_schema(
+    method='put',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="ID of the expedition"),
+    ],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'Status': openapi.Schema(type=openapi.TYPE_STRING, description='New status (ca or en)'),
+        },
+        required=['Status']
+    ),
+    responses={
+        200: openapi.Response(description='Successful response'),
+        403: openapi.Response(description='Access denied'),
+        # Другие возможные коды ответа
+    },
+    operation_summary="Update expedition status",
+)
 @api_view(['Put'])
 @isModerator
 def put_mod(request,id,format=None):

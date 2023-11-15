@@ -91,7 +91,7 @@ class ObjectView(APIView):
             return Response(f"Объекта с таким id нет")
         obj = Object.objects.get(ID_Object = id)
         print('ob', obj)
-        exp = Expedition.objects.filter(Status='in').last()
+        exp = Expedition.objects.filter(Status='in', ID_Creator=user).last()
         
         print('exp',exp)
         if exp is None:
