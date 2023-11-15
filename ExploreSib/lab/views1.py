@@ -80,6 +80,7 @@ class ObjectView(APIView):
             return Response({'message': 'Доступ запрещен: Неверные данные в токене'}, status=status.HTTP_403_FORBIDDEN)
 
         user = Users.objects.filter(id=user_id).first()
+        
         if not user:
             return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
         """
@@ -91,9 +92,10 @@ class ObjectView(APIView):
         obj = Object.objects.get(ID_Object = id)
         print('ob', obj)
         exp = Expedition.objects.filter(Status='in').last()
+        
         print('exp',exp)
         if exp is None:
-            exp = Expedition.objects.create()
+            exp = Expedition.objects.create(ID_Creator = user)
         print('exp',exp)
         exp.Objects.add(obj)
         exp.save()
@@ -295,7 +297,10 @@ class ExpView(APIView):
         """
         Возвращает экспедицию
         """
-        obj = get_object_or_404(Expedition, ID_Expedition=id)
+        try:
+            obj = Expedition.objects.get(ID_Expedition=id, ID_Creator=user)
+        except Expedition.DoesNotExist:
+            return Response({'message': 'Доступ запрещен: Нет доступа к этой заявке'}, status=status.HTTP_403_FORBIDDEN)
         serializer = ExpSerializer(obj)
         return Response(serializer.data)
 
@@ -334,7 +339,10 @@ class ExpView(APIView):
         """
         Обновляет экспедицию
         """
-        obj = get_object_or_404(Expedition, ID_Expedition=id)
+        try:
+            obj = Expedition.objects.get(ID_Expedition=id, ID_Creator=user)
+        except Expedition.DoesNotExist:
+            return Response({'message': 'Доступ запрещен: Нет доступа к этой заявке'}, status=status.HTTP_403_FORBIDDEN)
         serializer = ExpSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -370,12 +378,16 @@ class ExpView(APIView):
         """
         Удаляет экспедицию
         """
-        obj = get_object_or_404(Expedition, ID_Expedition=id)
+        try:
+            obj = Expedition.objects.get(ID_Expedition=id, ID_Creator=user)
+        except Expedition.DoesNotExist:
+            return Response({'message': 'Доступ запрещен: Нет доступа к этой заявке'}, status=status.HTTP_403_FORBIDDEN)
+
         obj.Status = 'de'
         obj.save()
 
         # exp = Expedition.objects.all()
-        serializer = ExpSerializer(exp, many=True)
+        serializer = ExpSerializer(obj, many=False)
         return Response(serializer.data)    
     
 @api_view(['Get', 'Post', 'Delete','Put'])
