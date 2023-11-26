@@ -20,7 +20,14 @@ class ObjectView(APIView):
         ],
     )
     def get(self, request, id, format=None):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
         if not token:
             return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -63,7 +70,20 @@ class ObjectView(APIView):
         ),
     )
     def post(self, request, id, format=None):
-        token = request.COOKIES.get('jwt')
+
+        # token_head = request.headers.get('Authorization')
+        # print('token',token_head);  
+        # token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
+
+
         if not token:
             return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -115,7 +135,14 @@ class ObjectView(APIView):
         ),
     )
     def put(self, request, id, format=None):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
         if not token:
             return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -152,7 +179,14 @@ class ObjectView(APIView):
         ],
     )
     def delete(self, request, id, format=None):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
         if not token:
             return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -275,7 +309,14 @@ class ExpView(APIView):
         responses={200: 'Successful response', 404: 'Expedition not found'}
     )
     def get(self, request, id, format=None):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
         if not token:
             return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -317,7 +358,14 @@ class ExpView(APIView):
         responses={200: 'Successful response', 400: 'Bad request'}
     )
     def put(self, request, id, format=None):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
         if not token:
             return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -357,7 +405,14 @@ class ExpView(APIView):
         responses={200: 'Successful response', 404: 'Expedition not found'}
     )
     def delete(self, request, id, format=None):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
         if not token:
             return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         

@@ -107,6 +107,14 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+]
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 

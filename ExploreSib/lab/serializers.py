@@ -10,10 +10,10 @@ from rest_framework import serializers
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ['id', 'username', 'email', 'password', 'Is_Super']
-        # extra_kwargs = {
-        #     'password': {'write_only': True}
-        # }
+        fields = ['id', 'username', 'Is_Super','password']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -28,7 +28,7 @@ class UsersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Users
-        fields = ['id', 'username', 'email', 'password', 'Is_Super']
+        fields = ['id', 'username', 'Is_Super']
 
     def create(self, validated_data):
         user = Users.objects.create_user(

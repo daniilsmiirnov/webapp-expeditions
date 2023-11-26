@@ -8,7 +8,14 @@ from .models import Users
 def isAuth(view_func):
     @wraps(view_func)
     def wrap(request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
 
         if not token:
             raise AuthenticationFailed('Аутентификация не пройдена!')
@@ -28,7 +35,15 @@ def isAuth(view_func):
 def isModerator(view_func):
     @wraps(view_func)
     def wrap(request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token);         
+
 
         if not token:
             raise PermissionDenied('Доступ запрещен: Токен отсутствует.')

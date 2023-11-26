@@ -40,6 +40,7 @@ class Expedition(models.Model):
         ('ca','Отменён'),
         ('de','Удалён'),
     ]
+    Archive = models.CharField(max_length=100,null=True)
     Status = models.CharField(max_length=2, choices=status, default='in', help_text='Status Expedition')
     Leader = models.CharField(max_length=100,help_text='Input name leader',default='ФИО Лидера')
     Moderator = models.ForeignKey(Users,related_name='Moderator', on_delete=models.CASCADE, null=True)

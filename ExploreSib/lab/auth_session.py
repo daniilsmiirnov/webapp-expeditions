@@ -2,7 +2,7 @@
 
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-
+from .serializers import *
 from rest_framework.decorators import api_view
 from .perm import *
 from rest_framework.decorators import api_view
@@ -43,6 +43,7 @@ from drf_yasg import openapi
 def register(request):
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)
+        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse({
@@ -97,17 +98,28 @@ def login(request):
 
         token = jwt.encode(payload, 'secret', algorithm='HS256')
         response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
+        # response.set_cookie(key='jwt', value=token)
+        response.set_cookie(key='jwt', value=token, httponly=True, secure=True)
+        serializer = UserSerializer(user)
         response.data = {
-            'message': 'Login successfull',
-            'jwt': token
+            'message': 'Успешная авторизация!',
+            'jwt': token,
+            'user':serializer.data
         }
         return response
 
 @api_view(['GET'])
 def user(request):
     if request.method == 'GET':
-        token = request.COOKIES.get('jwt')
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+            print('token',token); 
+            # Далее обработка токена
+        else:
+            token = request.COOKIES.get('jwt')
+            print('token cok',token); 
+            
 
         if not token:
             raise AuthenticationFailed('Аутентификация не пройдена!')

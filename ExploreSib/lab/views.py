@@ -12,7 +12,7 @@ from drf_yasg import openapi
 import jwt, datetime
 from django.conf import settings
 from django.core.cache import cache
-
+from django.utils import timezone
 @api_view(['Get'])
 @isModerator
 # @permission_classes([IsAuthenticated])
@@ -38,37 +38,58 @@ def us(request, format=None):
     ],
     responses={200: ObjSerializer(many=True)}
 )
-@api_view(['Get'])
+@api_view(['GET'])
 def get_objects(request, format=None):
     """
     Возвращает список объектов
     """
-    cache.set('mykey', '123143242', timeout=None)
-    value = cache.get('mykey')
-    print(value)
-    # print('Done!!!!!')
-    Field1= request.GET.get('name')
+    Field1 = request.GET.get('name')
     Field2 = request.GET.get('year')
     Field3 = request.GET.get('opener')
-    if  Field1 :
-        data = Object.objects.filter(Name_Obj=Field1) & Object.objects.filter(Status='ope')
-        serializer = ObjSerializer(data,many=True)
-        return Response(serializer.data)
-    if Field2 :
-        data = Object.objects.filter(Year=Field2) & Object.objects.filter(Status='ope')
-        serializer = ObjSerializer(data,many=True)
-        return Response(serializer.data)
+
+    data = Object.objects.filter(Status='ope')
+
+    if Field1:
+        data = data.filter(Name_Obj=Field1)
+    if Field2:
+        data = data.filter(Year=Field2)
     if Field3:
-        data = Object.objects.filter(Opener=Field3) & Object.objects.filter(Status='ope')
-        serializer = ObjSerializer(data,many=True)
-        return Response(serializer.data)
-    else:
-        objs = Object.objects.all()
-        o = objs;
-        print(o.values())
-        serializer = ObjSerializer(objs, many=True)
-        print(serializer.data)
-        return Response(serializer.data)
+        data = data.filter(Opener=Field3)
+
+    serializer = ObjSerializer(data, many=True)
+    return Response(serializer.data)
+
+# @api_view(['Get'])
+# def get_objects(request, format=None):
+#     """
+#     Возвращает список объектов
+#     """
+#     cache.set('mykey', '123143242', timeout=None)
+#     value = cache.get('mykey')
+#     print(value)
+#     # print('Done!!!!!')
+#     Field1= request.GET.get('name')
+#     Field2 = request.GET.get('year')
+#     Field3 = request.GET.get('opener')
+#     if  Field1 :
+#         data = Object.objects.filter(Name_Obj=Field1) & Object.objects.filter(Status='ope')
+#         serializer = ObjSerializer(data,many=True)
+#         return Response(serializer.data)
+#     if Field2 :
+#         data = Object.objects.filter(Year=Field2) & Object.objects.filter(Status='ope')
+#         serializer = ObjSerializer(data,many=True)
+#         return Response(serializer.data)
+#     if Field3:
+#         data = Object.objects.filter(Opener=Field3) & Object.objects.filter(Status='ope')
+#         serializer = ObjSerializer(data,many=True)
+#         return Response(serializer.data)
+#     else:
+#         objs = Object.objects.all()
+#         o = objs;
+#         print(o.values())
+#         serializer = ObjSerializer(objs, many=True)
+#         print(serializer.data)
+#         return Response(serializer.data)
 
 
 
@@ -156,7 +177,14 @@ def get_exps(request, format=None):
         print('---------',n.values())
         serializer = ExpSerializer(set, many=True)
         return Response(serializer.data)
-    token = request.COOKIES.get('jwt')
+    token_head = request.headers.get('Authorization')
+    if token_head:
+        token = token_head.split(' ')[1]  # Получение токена из заголовка
+        print('token',token); 
+            # Далее обработка токена
+    else:
+        token = request.COOKIES.get('jwt')
+        print('token cok',token); 
     if not token:
         return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -175,7 +203,8 @@ def get_exps(request, format=None):
     if not user:
         return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
     if user.Is_Super:
-        objs = Expedition.objects.all()
+        status=["ca","en","wo","de"]
+        objs = Expedition.objects.filter(Status__in=status)
         serializer = ExpSerializer(objs, many=True)
         return Response(serializer.data)
     if not user.Is_Super:
@@ -198,7 +227,14 @@ def get_exp(request,id,format=None):
 @api_view(['Get'])
 # @isAuth
 def put_user(request,format=None):
-    token = request.COOKIES.get('jwt')
+    token_head = request.headers.get('Authorization')
+    if token_head:
+        token = token_head.split(' ')[1]  # Получение токена из заголовка
+        print('token',token); 
+            # Далее обработка токена
+    else:
+        token = request.COOKIES.get('jwt')
+        print('token cok',token); 
     if not token:
         return Response({'message': 'Доступ запрещен: Токен отсутствует'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -251,14 +287,25 @@ def put_user(request,format=None):
 @api_view(['Put'])
 @isModerator
 def put_mod(request,id,format=None):
-    
+    token_head = request.headers.get('Authorization')
+    if token_head:
+        token = token_head.split(' ')[1]  # Получение токена из заголовка
+        print('token',token); 
+            # Далее обработка токена
+    else:
+        token = request.COOKIES.get('jwt')
+        print('token cok',token); 
+    payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    user_id = payload.get('id')
+    user = Users.objects.filter(id=user_id, Is_Super=True).first()
     exp = Expedition.objects.get(ID_Expedition=id)
     status = request.data["Status"]
     print(status)
     if exp.Status in ["ca","en","in"]:
         if status in ["ca","en"]:
             exp.Status=status
-            
+            exp.DateApproving=timezone.now()
+            exp.Moderator=user
             exp.save()
             serializer = ExpSerializer(exp)
         # if serializer.is_valid():
