@@ -305,6 +305,7 @@ def put_mod(request,id,format=None):
         if status in ["ca","en"]:
             exp.Status=status
             exp.DateApproving=timezone.now()
+            exp.DateEnd=timezone.now()
             exp.Moderator=user
             exp.save()
             serializer = ExpSerializer(exp)
