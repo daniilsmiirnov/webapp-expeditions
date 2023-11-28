@@ -13,6 +13,7 @@ import jwt, datetime
 from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
+import requests
 @api_view(['Get'])
 @isModerator
 # @permission_classes([IsAuthenticated])
@@ -257,14 +258,73 @@ def put_user(request,format=None):
         exp = Expedition.objects.get(ID_Creator=user, Status='in')
     except Expedition.DoesNotExist:
         return Response({'message': 'У вас нет экспедиции.'})
-
+    
     exp.Status='wo'
+    exp.DateEnd=timezone.now()
+    try:
+        exp_id = exp.ID_Expedition  # Получаем идентификатор экспедиции
+        token_go = '4321'  # Ваш константный ключ
+        url = 'http://localhost:8088/archive'
+
+
+        data = {
+            'exp_id': exp_id,
+            'token': token_go
+        }
+
+        response = requests.post(url, data=data)
+
+        if response.status_code == 200:
+            print("done success")
+            exp.Archive = "Запрошена справка в архиве!"
+        else:
+            exp.Archive = "Не удалось запросить справку из архива!"
+            
+    except requests.exceptions.RequestException as e:
+        print('error:', e)
     exp.save()
+    
     serializer = ExpSerializer(exp)
         #if serializer.is_valid():
          #   serializer.save()
     return Response(serializer.data)
 
+
+@api_view(['PUT'])
+def put_async(request, format=None):
+    """
+    Обновляет данные экспедиции асинхронно
+    """
+    expected_token = '4321'
+
+    # Проверка метода запроса (должен быть PUT)
+    if request.method != 'PUT':
+        return Response({'error': 'Метод не разрешен'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    exp_id = request.data.get('exp_id')
+    result = request.data.get('result')
+    token = request.data.get('token')
+
+    # Проверка наличия всех необходимых параметров
+    if not exp_id or not result or not token:
+        return Response({'error': 'Отсутствуют необходимые данные'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Проверка токена
+    if token != expected_token:
+        return Response({'error': 'Недопустимый токен'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        exp = Expedition.objects.get(ID_Expedition=exp_id)
+    except Expedition.DoesNotExist:
+        return Response({'error': 'Экспедиция не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+    exp.Archive = result
+    exp.save()
+    serializer = ExpSerializer(exp)
+    print(serializer.data)
+    return Response(serializer.data)
+    
+    
 @swagger_auto_schema(
     method='put',
     manual_parameters=[
@@ -328,6 +388,21 @@ def put_exp(request,id,format=None):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['Put'])
+def put_exp(request,id,format=None):
+    """
+    Обновляет экспедицию
+    """
+    obj = get_object_or_404(Expedition, ID_Expedition=id)
+    print('ob',obj)
+    serializer = ExpSerializer(obj,data=request.data)
+    print('se',serializer)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['Delete'])
 def del_exp1(request, id, format=None):    
     """
