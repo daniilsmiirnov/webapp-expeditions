@@ -262,7 +262,7 @@ def put_user(request,format=None):
     exp.Status='wo'
     exp.DateEnd=timezone.now()
     try:
-        exp_id = exp.ID_Expedition  # Получаем идентификатор экспедиции
+        exp_id = exp.ID_Expedition  # Получаем идентификатор экспедицииpost
         token_go = '4321'  # Ваш константный ключ
         url = 'http://localhost:8088/archive'
 
@@ -303,15 +303,15 @@ def put_async(request, format=None):
 
     exp_id = request.data.get('exp_id')
     result = request.data.get('result')
-    token = request.data.get('token')
+    # token = request.data.get('token')
 
     # Проверка наличия всех необходимых параметров
-    if not exp_id or not result or not token:
+    if not exp_id or not result :
         return Response({'error': 'Отсутствуют необходимые данные'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Проверка токена
-    if token != expected_token:
-        return Response({'error': 'Недопустимый токен'}, status=status.HTTP_403_FORBIDDEN)
+    # if token != expected_token:
+    #     return Response({'error': 'Недопустимый токен'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         exp = Expedition.objects.get(ID_Expedition=exp_id)
