@@ -92,7 +92,7 @@ def login(request):
 
         payload = {
             'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
             'iat': datetime.datetime.utcnow()
         }
 
