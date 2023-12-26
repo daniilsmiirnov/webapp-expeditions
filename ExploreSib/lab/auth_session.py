@@ -92,7 +92,7 @@ def login(request):
 
         payload = {
             'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             'iat': datetime.datetime.utcnow()
         }
 
@@ -171,10 +171,13 @@ def logout(request):
         # Сохранение токена в Redis при logout
         redis_connection = get_redis_connection("default")
         redis_connection.set(user_token, 'used', ex=10000)  # Или установите необходимое время жизни токена
-
+        
         response = Response()
-        response.delete_cookie('jwt')
+
+        response.delete_cookie('jwt', domain='')
+        # response.delete_cookie('jwt')
         response.data = {'message': 'Вы вышли из системы!'}
+
         return response
 
 

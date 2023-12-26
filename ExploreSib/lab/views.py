@@ -13,6 +13,10 @@ import jwt, datetime
 from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
+from dateutil import parser
+import dateutil.parser
+from django.db.models import Q
+from datetime import datetime
 import requests
 @api_view(['Get'])
 @isModerator
@@ -44,6 +48,21 @@ def get_objects(request, format=None):
     """
     Возвращает список объектов
     """
+    token_head = request.headers.get('Authorization')
+    if token_head:
+        token = token_head.split(' ')[1]  # Получение токена из заголовка
+    else:
+        token = request.COOKIES.get('jwt')
+
+    user_id = 0  # Инициализация user_id как 0 по умолчанию
+
+    if token:
+        try:
+            payload = jwt.decode(token, 'secret', algorithms='HS256')
+            user_id = payload.get('id')  # Получение ID пользователя из токена
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'message': 'Токен недействителен'})
+    print('user_id', user_id)
     Field1 = request.GET.get('name')
     Field2 = request.GET.get('year')
     Field3 = request.GET.get('opener')
@@ -56,9 +75,18 @@ def get_objects(request, format=None):
         data = data.filter(Year=Field2)
     if Field3:
         data = data.filter(Opener=Field3)
-
+    try:
+        exp = Expedition.objects.get(ID_Creator=user_id, Status='in')
+        expedition_draft = exp.ID_Expedition
+    except Expedition.DoesNotExist:
+        expedition_draft = 0
     serializer = ObjSerializer(data, many=True)
-    return Response(serializer.data)
+    response_data = {
+        'expedition_draft': expedition_draft,  # Это ваш идентификатор черновой экспедиции
+        'objects': serializer.data  # Это массив объектов
+    }
+
+    return Response(response_data)
 @api_view(['GET'])
 def get_objects1(request, format=None):
     """
@@ -76,7 +104,7 @@ def get_objects1(request, format=None):
         data = data.filter(Year=Field2)
     if Field3:
         data = data.filter(Opener=Field3)
-
+    data = Object.objects.filter(Status='ope')
     serializer = ObjSerializer(data, many=True)
     return Response(serializer.data)
 # @api_view(['Get'])
@@ -151,52 +179,68 @@ def get_exps(request, format=None):
     Field1= request.GET.get('status')
     Date1 = request.GET.get('DateFormStart')
     Date2 = request.GET.get('DateFormEnd')
-    if  Field1:
-        data = Expedition.objects.filter(Status=Field1)
-        serializer = ExpSerializer(data,many=True)
-        da= data
-        print(da.values())
-        return Response(serializer.data)
-    if Date2 and Date1:
-        date1 = datetime.strptime(Date1, "%Y-%m-%d %H:%M:%S")
-        date2 = datetime.strptime(Date2, "%Y-%m-%d %H:%M:%S")
-        objects = Expedition.objects.all()
-        set = Expedition.objects.none()
-        for obj in objects:
-                if (obj.DateEnd<date2 and obj.DateStart>date1):
-                    set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
-                    s=set
-                    print(s.values())
-        n=set
-        print('---------',n.values())
-        serializer = ExpSerializer(set, many=True)
-        return Response(serializer.data)
-    if Date2:
-        date2 = datetime.strptime(Date2, "%Y-%m-%d %H:%M:%S")
-        objects = Expedition.objects.all()
-        set = Expedition.objects.none()
-        for obj in objects:
-                if obj.DateEnd<date2:
-                    set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
-                    s=set
-                    print(s.values())
-        n=set
-        print('---------',n.values())
-        serializer = ExpSerializer(set, many=True)
-        return Response(serializer.data)
+    objects = Expedition.objects.all()
+
+    if Field1:
+        objects = objects.filter(Status=Field1)
+
     if Date1:
         date1 = datetime.strptime(Date1, "%Y-%m-%d %H:%M:%S")
-        objects = Expedition.objects.all()
-        set = Expedition.objects.none()
-        for obj in objects:
-                if obj.DateStart>date1:
-                    set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
-                    s=set
-                    print(s.values())
-        n=set
-        print('---------',n.values())
-        serializer = ExpSerializer(set, many=True)
-        return Response(serializer.data)
+        objects = objects.filter(DateStart__gt=date1)
+
+    if Date2:
+        date2 = datetime.strptime(Date2, "%Y-%m-%d %H:%M:%S")
+        objects = objects.filter(DateEnd__lt=date2)
+    filtered_expeditions = objects.distinct()
+    if Date2 or Date1 or Field1:
+        serializer = ExpSerializer(filtered_expeditions, many=True)
+        return Response(serializer.data)    
+    # if  Field1:
+    #     data = Expedition.objects.filter(Status=Field1)
+    #     serializer = ExpSerializer(data,many=True)
+    #     da= data
+    #     print(da.values())
+    #     return Response(serializer.data)
+    # if Date2 and Date1:
+    #     date1 = datetime.strptime(Date1, "%Y-%m-%d %H:%M:%S")
+    #     date2 = datetime.strptime(Date2, "%Y-%m-%d %H:%M:%S")
+    #     objects = Expedition.objects.all()
+    #     set = Expedition.objects.none()
+    #     for obj in objects:
+    #             if (obj.DateEnd<date2 and obj.DateStart>date1):
+    #                 set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
+    #                 s=set
+    #                 print(s.values())
+    #     n=set
+    #     print('---------',n.values())
+    #     serializer = ExpSerializer(set, many=True)
+    #     return Response(serializer.data)
+    # if Date2:
+    #     date2 = datetime.strptime(Date2, "%Y-%m-%d %H:%M:%S")
+    #     objects = Expedition.objects.all()
+    #     set = Expedition.objects.none()
+    #     for obj in objects:
+    #             if obj.DateEnd<date2:
+    #                 set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
+    #                 s=set
+    #                 print(s.values())
+    #     n=set
+    #     print('---------',n.values())
+    #     serializer = ExpSerializer(set, many=True)
+    #     return Response(serializer.data)
+    # if Date1:
+    #     date1 = datetime.strptime(Date1, "%Y-%m-%d %H:%M:%S")
+    #     objects = Expedition.objects.all()
+    #     set = Expedition.objects.none()
+    #     for obj in objects:
+    #             if obj.DateStart>date1:
+    #                 set |= Expedition.objects.filter(ID_Expedition=obj.ID_Expedition)
+    #                 s=set
+    #                 print(s.values())
+    #     n=set
+    #     print('---------',n.values())
+    #     serializer = ExpSerializer(set, many=True)
+    #     return Response(serializer.data)
     token_head = request.headers.get('Authorization')
     if token_head:
         token = token_head.split(' ')[1]  # Получение токена из заголовка
@@ -232,18 +276,6 @@ def get_exps(request, format=None):
         serializer = ExpSerializer(objs, many=True)
         return Response(serializer.data)
     return Response({'message': 'Экспедиций нет'})
-@api_view(['Get'])
-def get_exp(request,id,format=None):
-    """
-    Возвращает экспедицию
-    """
-    if request.method == 'GET':
-        obj = get_object_or_404(Expedition, ID_Expedition=id)
-        #obj = City_Obj.objects.get(ID_Object=id)
-        print(obj)
-        serializer = ExpSerializer(obj)
-    return Response(serializer.data)
-
 @api_view(['Get'])
 # @isAuth
 def put_user(request,format=None):
@@ -313,7 +345,7 @@ def put_async(request, format=None):
     """
     Обновляет данные экспедиции асинхронно
     """
-    expected_token = '4321'
+    expected_token = '7a4f891b2e613dca'
 
     # Проверка метода запроса (должен быть PUT)
     if request.method != 'PUT':
