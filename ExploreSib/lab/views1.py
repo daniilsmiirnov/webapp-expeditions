@@ -164,7 +164,7 @@ class ObjectView(APIView):
         Обновляет объект
         """
         obj = get_object_or_404(Object, ID_Object=id)
-        #print('hi',obj)
+        print('hi',obj)
         serializer = ObjSerializer(obj,data=request.data)
         print('se',serializer)
         if serializer.is_valid():

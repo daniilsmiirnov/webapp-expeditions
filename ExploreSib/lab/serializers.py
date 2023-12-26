@@ -45,8 +45,13 @@ class ObjSerializer(serializers.ModelSerializer):
         model = Object
         fields = '__all__'
         
-        
+class UsertestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['id', 'username']
 class ExpSerializer(serializers.ModelSerializer):
+    Moderator = UsertestSerializer(read_only=True)
+    ID_Creator = UsertestSerializer(read_only=True)
     class Meta:
         #obj = ObjSerializer(read_only=True)
         # Модель, которую мы сериализуем

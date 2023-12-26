@@ -59,7 +59,26 @@ def get_objects(request, format=None):
 
     serializer = ObjSerializer(data, many=True)
     return Response(serializer.data)
+@api_view(['GET'])
+def get_objects1(request, format=None):
+    """
+    Возвращает список объектов
+    """
+    Field1 = request.GET.get('name')
+    Field2 = request.GET.get('year')
+    Field3 = request.GET.get('opener')
 
+    data = Object.objects.all()
+
+    if Field1:
+        data = data.filter(Name_Obj=Field1)
+    if Field2:
+        data = data.filter(Year=Field2)
+    if Field3:
+        data = data.filter(Opener=Field3)
+
+    serializer = ObjSerializer(data, many=True)
+    return Response(serializer.data)
 # @api_view(['Get'])
 # def get_objects(request, format=None):
 #     """
@@ -260,7 +279,7 @@ def put_user(request,format=None):
         return Response({'message': 'У вас нет экспедиции.'})
     
     exp.Status='wo'
-    exp.DateEnd=timezone.now()
+    exp.DateApproving=timezone.now()
     try:
         exp_id = exp.ID_Expedition  # Получаем идентификатор экспедицииpost
         token_go = '4321'  # Ваш константный ключ
@@ -269,7 +288,6 @@ def put_user(request,format=None):
 
         data = {
             'exp_id': exp_id,
-            'token': token_go
         }
 
         response = requests.post(url, data=data)
@@ -303,15 +321,15 @@ def put_async(request, format=None):
 
     exp_id = request.data.get('exp_id')
     result = request.data.get('result')
-    # token = request.data.get('token')
+    token = request.data.get('token')
 
     # Проверка наличия всех необходимых параметров
     if not exp_id or not result :
         return Response({'error': 'Отсутствуют необходимые данные'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Проверка токена
-    # if token != expected_token:
-    #     return Response({'error': 'Недопустимый токен'}, status=status.HTTP_403_FORBIDDEN)
+    #Проверка токена
+    if token != expected_token:
+        return Response({'error': 'Недопустимый токен'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         exp = Expedition.objects.get(ID_Expedition=exp_id)
@@ -361,16 +379,16 @@ def put_mod(request,id,format=None):
     exp = Expedition.objects.get(ID_Expedition=id)
     status = request.data["Status"]
     print(status)
-    if exp.Status in ["ca","en","in"]:
+    if exp.Status in ["wo","en","ca"]:
         if status in ["ca","en"]:
             exp.Status=status
-            exp.DateApproving=timezone.now()
             exp.DateEnd=timezone.now()
             exp.Moderator=user
-            exp.save()
-            serializer = ExpSerializer(exp)
-        # if serializer.is_valid():
-            #    serializer.save()
+            print(exp.Status,exp.DateEnd,exp.Moderator)
+            serializer = ExpSerializer(exp,data=request.data)
+            if serializer.is_valid():
+               serializer.save()
+
             return Response(serializer.data) 
     else:
         return Response("Заявка недоступна для изменения статуса!")

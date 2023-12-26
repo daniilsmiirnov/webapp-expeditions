@@ -135,15 +135,47 @@ def user(request):
                              })
 
 
+# @api_view(['POST'])
+# @isAuth
+# def logout(request):
+#     if request.method == 'POST':
+#         response = Response()
+#         response.delete_cookie('jwt')
+#         response.data = {
+#             'message': 'Вы вышли из системы!'
+#         }
+#         return response
+from django_redis import get_redis_connection
+
 @api_view(['POST'])
 @isAuth
 def logout(request):
     if request.method == 'POST':
+        token_head = request.headers.get('Authorization')
+        if token_head:
+            token = token_head.split(' ')[1]  # Получение токена из заголовка
+        else:
+            token = request.COOKIES.get('jwt')
+
+        if not token:
+            return JsonResponse({'message': 'Токен не найден'})
+
+        try:
+            payload = jwt.decode(token, 'secret', algorithms='HS256')
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'message': 'Токен недействителен'})
+
+        user_id = payload.get('id')
+        user_token = f"token:{user_id}:{token}"
+
+        # Сохранение токена в Redis при logout
+        redis_connection = get_redis_connection("default")
+        redis_connection.set(user_token, 'used', ex=10000)  # Или установите необходимое время жизни токена
+
         response = Response()
         response.delete_cookie('jwt')
-        response.data = {
-            'message': 'Вы вышли из системы!'
-        }
+        response.data = {'message': 'Вы вышли из системы!'}
         return response
+
 
 
