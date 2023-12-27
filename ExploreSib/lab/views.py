@@ -49,6 +49,7 @@ def get_objects(request, format=None):
     Возвращает список объектов
     """
     token_head = request.headers.get('Authorization')
+    print('tok',token_head)
     if token_head:
         token = token_head.split(' ')[1]  # Получение токена из заголовка
     else:
@@ -62,6 +63,8 @@ def get_objects(request, format=None):
             user_id = payload.get('id')  # Получение ID пользователя из токена
         except jwt.ExpiredSignatureError:
             return JsonResponse({'message': 'Токен недействителен'})
+    else:
+        pass
     print('user_id', user_id)
     Field1 = request.GET.get('name')
     Field2 = request.GET.get('year')
