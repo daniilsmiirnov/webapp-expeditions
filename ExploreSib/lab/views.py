@@ -270,7 +270,7 @@ def get_exps(request, format=None):
     if not user:
         return Response({'message': 'Доступ запрещен: Недостаточно прав для выполнения операции'}, status=status.HTTP_403_FORBIDDEN)
     if user.Is_Super:
-        status=["ca","en","wo","de"]
+        status=["ca","en","wo","de","in"]
         objs = Expedition.objects.filter(Status__in=status)
         serializer = ExpSerializer(objs, many=True)
         return Response(serializer.data)
