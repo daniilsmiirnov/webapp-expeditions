@@ -6,5 +6,6 @@
 1. [Фронтенд + Асинхронное приложение](https://github.com/daniilsmiirnov/front) 
 2. [Бэкенд](https://github.com/daniilsmiirnov/webapp-expeditions) 
 3. [Нативное приложение](https://github.com/daniilsmiirnov/ExpMobile/tree/ReactNative)
+4. [GitHub Pages](https://daniilsmiirnov.github.io/front/)
 
 
