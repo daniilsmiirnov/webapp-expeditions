@@ -317,10 +317,8 @@ def put_user(request,format=None):
     exp.DateApproving=timezone.now()
     try:
         exp_id = exp.ID_Expedition  # Получаем идентификатор экспедицииpost
-        token_go = '4321'  # Ваш константный ключ
+   
         url = 'http://localhost:8088/archive'
-
-
         data = {
             'exp_id': exp_id,
         }
@@ -341,6 +339,8 @@ def put_user(request,format=None):
         #if serializer.is_valid():
          #   serializer.save()
     return Response(serializer.data)
+
+
 
 
 @api_view(['PUT'])

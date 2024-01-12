@@ -8,16 +8,15 @@ urlpatterns = [
 
     # API objects
     path(r'object/', views.get_objects), #список всех объектов +
-    path(r'objectde/', views.get_objects1),
     path(r'object/create/', views.create_object), # создание объекта +
-    # path(r'object/<int:id>/', views1.object),
     path(r'object/<int:id>/',ObjectView.as_view() ),
 
     # API Exp
     path(r'expedition/', views.get_exps), #список всех экспедиций +
-    path(r'expedition/update_user/', views.put_user), # изменение статуса юзером +
+    path(r'expedition/update_user/', views.put_user), # изменение статуса юзером + вызов асинхронного сервиса
+    path(r'/archive', views.put_user), # архив 
     path(r'expedition/<int:id>/update_mod/', views.put_mod), # изменение статуса модератором +
-    path(r'expedition/update_async/', views.put_async), # изменение статуса модератором +
+    path(r'expedition/update_async/', views.put_async), # изменение статуса сервисом
     # path(r'expedition/<int:id>/', views1.exp), # одна экспедиция +    
     path(r'expedition/<int:id>/', ExpView.as_view()), 
     path(r'expedition/<int:id>/delete_exp/<int:id2>', views.del_object_exp),   #удаление объекта из заявки +
