@@ -117,8 +117,10 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+     "http://localhost:3000",
+
 ]
+
 CORS_ALLOW_HEADERS = [
     "Authorization",
     "Content-Type",
@@ -207,6 +209,7 @@ AWS_STORAGE_BUCKET_NAME = 'static'
 AWS_ACCESS_KEY_ID = 'kKnzUbAa0EbtUvV4Os0c'
 AWS_SECRET_ACCESS_KEY = 'a0610EIEjlqCeTmUvfQlLbREYWrxJmkzqAgS7Ys7'
 AWS_S3_ENDPOINT_URL = 'http://127.0.0.1:9000'
+# AWS_S3_ENDPOINT_URL = 'http://172.20.10.2:9000/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 

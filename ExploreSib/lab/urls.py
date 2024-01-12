@@ -8,7 +8,7 @@ urlpatterns = [
 
     # API objects
     path(r'object/', views.get_objects), #список всех объектов +
-    path(r'objectde/', views.get_objects1),
+
     path(r'object/create/', views.create_object), # создание объекта +
     # path(r'object/<int:id>/', views1.object),
     path(r'object/<int:id>/',ObjectView.as_view() ),

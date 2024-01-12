@@ -84,32 +84,14 @@ def get_objects(request, format=None):
     except Expedition.DoesNotExist:
         expedition_draft = 0
     serializer = ObjSerializer(data, many=True)
+    
     response_data = {
         'expedition_draft': expedition_draft,  # Это ваш идентификатор черновой экспедиции
         'objects': serializer.data  # Это массив объектов
     }
 
     return Response(response_data)
-@api_view(['GET'])
-def get_objects1(request, format=None):
-    """
-    Возвращает список объектов
-    """
-    Field1 = request.GET.get('name')
-    Field2 = request.GET.get('year')
-    Field3 = request.GET.get('opener')
 
-    data = Object.objects.all()
-
-    if Field1:
-        data = data.filter(Name_Obj=Field1)
-    if Field2:
-        data = data.filter(Year=Field2)
-    if Field3:
-        data = data.filter(Opener=Field3)
-    data = Object.objects.filter(Status='ope')
-    serializer = ObjSerializer(data, many=True)
-    return Response(serializer.data)
 # @api_view(['Get'])
 # def get_objects(request, format=None):
 #     """
@@ -315,26 +297,7 @@ def put_user(request,format=None):
     
     exp.Status='wo'
     exp.DateApproving=timezone.now()
-    try:
-        exp_id = exp.ID_Expedition  # Получаем идентификатор экспедицииpost
-        token_go = '4321'  # Ваш константный ключ
-        url = 'http://localhost:8088/archive'
 
-
-        data = {
-            'exp_id': exp_id,
-        }
-
-        response = requests.post(url, data=data)
-
-        if response.status_code == 200:
-            print("done success")
-            exp.Archive = "Запрошена справка в архиве!"
-        else:
-            exp.Archive = "Не удалось запросить справку из архива!"
-            
-    except requests.exceptions.RequestException as e:
-        print('error:', e)
     exp.save()
     
     serializer = ExpSerializer(exp)
